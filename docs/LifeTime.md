@@ -1,0 +1,16 @@
+Application
+        │
+        ▼
+        Engine
+        │
+        ▼
+        SceneManager
+        │
+        ▼
+        Scene
+        │
+        ▼
+        Entities
+        │
+        ▼
+        Components

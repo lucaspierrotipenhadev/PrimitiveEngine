@@ -1,0 +1,327 @@
+# Build directories
+build/
+cmake-build-*/
+out/
+bin/
+lib/
+obj/
+*.exe
+*.out
+*.app
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+CMakeScripts/
+*.cmake
+!CMakeLists.txt
+!*.cmake.in
+!*Config.cmake.in
+!*ConfigVersion.cmake.in
+
+# Compiler generated files
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+*.a
+*.lib
+*.dll.a
+*.pdb
+*.ilk
+*.exp
+*.manifest
+*.dep
+*.gcda
+*.gcno
+*.gcov
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.db
+*.VC.VC.opendb
+*.clangd
+compile_commands.json
+.vs/
+
+# Clang/LLVM
+*.dSYM/
+*.dSYM.dwfp/
+*.profdata
+*.profraw
+
+# Debug/Release build folders
+Debug/
+Release/
+RelWithDebInfo/
+MinSizeRel/
+
+# C++ specific
+*.pch
+*.gch
+*.tlb
+*.tlh
+*.bak
+*.tmp
+*.log
+
+# Doxygen
+docs/html/
+docs/latex/
+docs/xml/
+docs/*.tmp
+docs/*.log
+
+# Test coverage
+*.coverage
+*.cov
+coverage/
+*.gcov
+*.gcda
+*.gcno
+
+# Profiling
+gmon.out
+profiling/
+
+# Package manager files (if any)
+vcpkg_installed/
+vcpkg-manifest-install.log
+conaninfo.txt
+conanbuildinfo.*
+conan.lock
+conanbuild.*
+conanenv.*
+conan_imports_*
+.cache/
+
+# ThirdParty (keep the directory but ignore contents)
+ThirdParty/*/
+!ThirdParty/CMakeLists.txt
+!ThirdParty/.gitkeep
+
+# Assets (keep directory structure but ignore actual files)
+Assets/**/*.psd
+Assets/**/*.tif
+Assets/**/*.mp4
+!Assets/.gitkeep
+
+# Sandbox specific
+Sandbox/*.exe
+Sandbox/*.out
+Sandbox/logs/
+Sandbox/saves/
+
+# Engine specific
+Engine/**/*.pdb
+Engine/**/*.ilk
+Engine/**/*.exp
+Engine/**/*.lib
+Engine/**/*.dll
+Engine/**/*.dll.a
+Engine/**/*.a
+Engine/**/*.so
+Engine/**/*.dylib
+Engine/**/*.dSYM/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+ehthumbs_vista.db
+*.Trashes
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+~$*
+
+# Logs
+*.log
+*.aux
+*.idx
+*.out
+*.toc
+*.lof
+*.lot
+*.bbl
+*.blg
+*.brf
+*.cb
+*.ind
+*.ilg
+*.inx
+*.ps
+*.pdf
+*.synctex.gz
+
+# Core dumps
+core.*
+*.core
+
+# Python virtual environment (if using scripts)
+venv/
+env/
+.venv/
+.env/
+__pycache__/
+*.py[cod]
+
+# Benchmarking results
+benchmark_results/
+*.bench
+*.perf
+
+# Android builds (if applicable)
+*.apk
+*.dex
+*.odex
+
+# iOS builds (if applicable)
+*.ipa
+*.mobileprovision
+
+# Docker
+.dockerignore
+Dockerfile.*
+!Dockerfile
+
+# Gradle (if using for Android)
+.gradle/
+gradle/
+*.gradle
+
+# Node (if using for tools)
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Custom project specific
+PrimitiveEngine.iml
+*.userprefs
+*.unity
+*.meta
+
+# VS Code specific with C++ extension
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/launch.json
+.vscode/extensions.json
+.vscode/*.code-snippets
+
+# CLion
+.idea/caches/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dataSources.local.xml
+.idea/dataSources/
+.idea/sqlDataSources.xml
+.idea/dynamic.xml
+.idea/uiDesigner.xml
+.idea/gradle.xml
+.idea/vcs.xml
+.idea/compiler.xml
+.idea/libraries/
+.idea/jarRepositories.xml
+.idea/misc.xml
+.idea/runConfigurations/
+.idea/scala_compiler.xml
+
+# Qt specific (if using)
+*.pro.user
+*.pro.user.*
+*.creator
+*.creator.user
+*.creator.user.*
+*.files
+*.includes
+*.config
+Makefile.Debug
+Makefile.Release
+*.qm
+*.ts
+*.moc
+*.moc.cpp
+qrc_*.cpp
+ui_*.h
+rcc_*.cpp
+*.qmlc
+*.jsc
+*.qmltypes
+
+# Windows specific
+*.ncb
+*.sdf
+*.opensdf
+*.sln
+*.suo
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.vcxproj.vspscc
+*.sln.vspscc
+*.vssscc
+*.vspscc
+
+# Linux specific
+*.so.*
+*.a.*
+*.la
+*.lo
+*.o
+*.ko
+*.mod.c
+*.mod.o
+*.symvers
+*.order
+*.markers
+*.cmd
+*.gcno
+*.gcda
+*.gcov
+*.d
+*.dwo
+*.Po
+*.in
+*.tpo
+*.pico
+*.pyc
+
+# Mac specific
+*.dSYM
+*.dSYM.dwfp
+*.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.swp
+*.swo
