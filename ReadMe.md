@@ -40,3 +40,5 @@ Para compilar e rodar o sistema user:
 Para compilar: & "C:\Program Files\CMake\bin\cmake.exe" -S . -B build
 
 Para rodar: & "C:\Program Files\CMake\bin\cmake.exe" --build build
+
+Para refazer o build: Remove-Item -Recurse -Force build/

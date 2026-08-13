@@ -1,0 +1,56 @@
+#include "Primitive/Renderer/OpenGL/OpenGLRenderer.hpp"
+
+#include <glad/gl.h>
+#include <SDL3/SDL.h>
+
+#include <stdexcept>
+#include <iostream>
+
+namespace primitive
+{
+    void OpenGLRenderer::Initialize()
+    {
+        if (!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress))
+        {
+            throw std::runtime_error(
+                "Failed to initialize GLAD.");
+        }
+
+        std::cout
+            << "[OpenGL] Vendor: "
+            << reinterpret_cast<const char *>(glGetString(GL_VENDOR))
+            << '\n';
+
+        std::cout
+            << "[OpenGL] Renderer: "
+            << reinterpret_cast<const char *>(glGetString(GL_RENDERER))
+            << '\n';
+
+        std::cout
+            << "[OpenGL] Version: "
+            << reinterpret_cast<const char *>(glGetString(GL_VERSION))
+            << '\n';
+    }
+
+    void OpenGLRenderer::Shutdown()
+    {
+    }
+
+    void OpenGLRenderer::BeginFrame()
+    {
+    }
+
+    void OpenGLRenderer::EndFrame()
+    {
+    }
+
+    void OpenGLRenderer::Clear(
+        float r,
+        float g,
+        float b,
+        float a)
+    {
+        glClearColor(r, g, b, a);
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+}

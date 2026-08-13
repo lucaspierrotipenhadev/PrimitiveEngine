@@ -6,4 +6,5 @@ target_link_libraries(
     PrimitiveSandbox
     PRIVATE
         PrimitiveEngine
+        SDL3::SDL3
 )

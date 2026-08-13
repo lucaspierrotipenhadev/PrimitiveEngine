@@ -8,12 +8,10 @@ namespace primitive
     Application::Application()
         : m_engine(std::make_unique<Engine>())
     {
-        std::cout << "[Application] Starting application...\n";
     }
 
     Application::~Application()
     {
-        std::cout << "[Application] Application shutdown.\n";
     }
 
     void Application::Run()

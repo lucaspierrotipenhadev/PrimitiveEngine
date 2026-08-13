@@ -21,15 +21,16 @@ Core/
 ├── Configuration
 ├── Logger
 ├── FileSystem
-├── Window
 ├── Time
 ├── EventBus
-├── Input
 ├── UUID
 ├── Layer
 ├── LayerStack
 ├── CommandLine
 └── Version
+Platform/
+├── Window
+└── Input
 
 
 4. Responsabilidade de cada classe

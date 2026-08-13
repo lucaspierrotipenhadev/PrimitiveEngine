@@ -13,14 +13,39 @@
 
 v0.1 — Foundation
 
-[✓] CMake
-[✓] C++20
-[✓] Engine como biblioteca
-[✓] Sandbox como executável
-[✓] API pública
-[✓] Application
-[✓] Engine lifecycle
-[✓] Main loop
-[✓] Update
-[✓] Render placeholder
-[✓] Shutdown
+| Componente                  | Estado |
+| --------------------------- | ------ |
+| Core / Application / Engine | ✅      |
+| Logger                      | ✅      |
+| Time                        | ✅      |
+| Window                      | ✅      |
+| Platform                    | ✅      |
+| SDL3                        | ✅      |
+| Input                       | ✅      |
+| SDLInput                    | ✅      |
+| EventBus                    | ✅      |
+| Resource                    | ✅      |
+| ResourceManager             | ✅      |
+| FileSystem                  | ✅      |
+| IResourceLoader             | ✅      |
+| LoaderRegistry              | ✅      |
+| Configuration               | ✅      |
+| Configuration → Window      | ✅      |
+| Configuration → Engine      | ✅      |
+| Core Integration Test       | ✅      |
+
+
+v.02
+| Componente             | Estado |
+| ---------------------- | ------ |
+| Renderer               | ✅      |
+| IRendererAPI           | ✅      |
+| TestRendererAPI        | ✅      |
+| OpenGLRenderer         | ✅      |
+| OpenGL Context         | ✅      |
+| GLAD 2                 | ✅      |
+| OpenGL 4.6 Core        | ✅      |
+| Renderer → Engine      | ✅      |
+| Clear / primeiro frame | ✅      |
+| **Shader**             | ⏳      |
+| Camera                 | ⏳      |
