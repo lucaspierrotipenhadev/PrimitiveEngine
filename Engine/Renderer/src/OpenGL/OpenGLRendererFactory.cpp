@@ -4,6 +4,7 @@
 #include "Primitive/Renderer/OpenGL/OpenGLShaderLoader.hpp"
 #include "Primitive/Renderer/OpenGL/OpenGLVertexBuffer.hpp"
 #include "Primitive/Renderer/OpenGL/OpenGLVertexArray.hpp"
+#include "Primitive/Renderer/OpenGL/OpenGLIndexBuffer.hpp"
 
 namespace primitive
 {
@@ -15,19 +16,28 @@ namespace primitive
 
     std::unique_ptr<VertexBuffer>
     OpenGLRendererFactory::CreateVertexBuffer(
-        const void* data,
+        const void *data,
         std::size_t size)
     {
         return std::make_unique<OpenGLVertexBuffer>(
             data,
-            size
-        );
+            size);
     }
 
     std::unique_ptr<VertexArray>
     OpenGLRendererFactory::CreateVertexArray()
     {
         return std::make_unique<OpenGLVertexArray>();
+    }
+
+    std::unique_ptr<IndexBuffer>
+    OpenGLRendererFactory::CreateIndexBuffer(
+        const std::uint32_t *indices,
+        std::uint32_t count)
+    {
+        return std::make_unique<OpenGLIndexBuffer>(
+            indices,
+            count);
     }
 
     std::shared_ptr<IResourceLoader>

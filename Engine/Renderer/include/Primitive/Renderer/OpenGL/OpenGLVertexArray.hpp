@@ -19,6 +19,10 @@ namespace primitive
             const VertexBufferLayout& layout
         ) override;
 
+        void SetIndexBuffer(
+            const IndexBuffer& IndexBuffer
+        ) override;
+
     private:
         unsigned int m_rendererID{0};
         unsigned int m_vertexAttributeIndex{0};

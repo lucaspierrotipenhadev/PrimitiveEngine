@@ -4,6 +4,8 @@
 
 #include <stdexcept>
 
+#include "Primitive/Renderer/IndexBuffer.hpp"
+
 namespace primitive
 {
     namespace
@@ -103,5 +105,13 @@ namespace primitive
 
             ++m_vertexAttributeIndex;
         }
+    }
+
+    void OpenGLVertexArray::SetIndexBuffer(
+        const IndexBuffer& indexBuffer
+    )
+    {
+        Bind();
+        indexBuffer.Bind();
     }
 }

@@ -18,5 +18,6 @@ namespace primitive
 
             void Clear(float r, float g, float b, float a) override;
             void Draw(std::uint32_t vertexCount) override;
+            void DrawIndexed(std::uint32_t indexCount) override;
     };
 }

@@ -47,5 +47,5 @@ v.02
 | OpenGL 4.6 Core        | ✅      |
 | Renderer → Engine      | ✅      |
 | Clear / primeiro frame | ✅      |
-| **Shader**             | ⏳      |
+| Shader                 | ✅      |
 | Camera                 | ⏳      |

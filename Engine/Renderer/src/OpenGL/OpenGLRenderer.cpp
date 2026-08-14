@@ -62,4 +62,14 @@ namespace primitive
             static_cast<GLsizei>(vertexCount)
         );
     }
+
+    void OpenGLRenderer::DrawIndexed(std::uint32_t indexCount)
+    {
+        glDrawElements(
+            GL_TRIANGLES,
+            static_cast<GLsizei>(indexCount),
+            GL_UNSIGNED_INT,
+            nullptr
+        );
+    }
 }

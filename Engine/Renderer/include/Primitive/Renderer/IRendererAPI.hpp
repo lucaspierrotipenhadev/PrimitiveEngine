@@ -20,6 +20,7 @@ namespace primitive
 
         virtual void Clear(float r, float g, float b, float a) = 0;
         virtual void Draw(std::uint32_t vertexCount) = 0;
+        virtual void DrawIndexed(std::uint32_t indexCount) = 0;
 
     protected:
         IRendererAPI() = default;

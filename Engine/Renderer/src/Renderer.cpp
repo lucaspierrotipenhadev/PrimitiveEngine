@@ -11,7 +11,9 @@
 #include "Primitive/Renderer/IRendererFactory.hpp"
 
 #include "Primitive/Renderer/VertexArray.hpp"
+#include "Primitive/Renderer/IndexBuffer.hpp"
 #include "Primitive/Renderer/OpenGL/OpenGLRendererFactory.hpp"
+#include "Primitive/Renderer/OpenGL/OpenGLIndexBuffer.hpp"
 
 namespace primitive
 {
@@ -25,13 +27,11 @@ namespace primitive
             {
             case RendererBackend::OpenGL:
                 return std::make_unique<
-                    OpenGLRendererFactory
-                >();
+                    OpenGLRendererFactory>();
 
             default:
                 throw std::runtime_error(
-                    "Unsupported renderer backend."
-                );
+                    "Unsupported renderer backend.");
             }
         }
     }
@@ -41,13 +41,12 @@ namespace primitive
 
     void Renderer::Initialize(
         RendererBackend backend,
-        ResourceManager& resourceManager)
+        ResourceManager &resourceManager)
     {
         if (m_api || m_factory)
         {
             throw std::runtime_error(
-                "Renderer is already initialized."
-            );
+                "Renderer is already initialized.");
         }
 
         m_factory =
@@ -59,8 +58,7 @@ namespace primitive
         if (!m_api)
         {
             throw std::runtime_error(
-                "Renderer factory failed to create Renderer API."
-            );
+                "Renderer factory failed to create Renderer API.");
         }
 
         m_api->Initialize();
@@ -68,7 +66,7 @@ namespace primitive
         auto shaderLoader =
             m_factory->CreateShaderLoader();
 
-        if(!shaderLoader)
+        if (!shaderLoader)
         {
             throw std::runtime_error("Renderer factory failed to create shader loader");
         }
@@ -115,8 +113,7 @@ namespace primitive
                 r,
                 g,
                 b,
-                a
-            );
+                a);
         }
     }
 
@@ -129,22 +126,32 @@ namespace primitive
         }
     }
 
+    void Renderer::DrawIndexed(
+        const IndexBuffer& indexBuffer
+    )
+    {
+        if(m_api)
+        {
+            m_api->DrawIndexed(
+                indexBuffer.GetCount()
+            );
+        }
+    }
+
     std::unique_ptr<VertexBuffer>
     Renderer::CreateVertexBuffer(
-        const void* data,
+        const void *data,
         std::size_t size)
     {
         if (!m_factory)
         {
             throw std::runtime_error(
-                "Renderer is not initialized."
-            );
+                "Renderer is not initialized.");
         }
 
         return m_factory->CreateVertexBuffer(
             data,
-            size
-        );
+            size);
     }
 
     std::unique_ptr<VertexArray>
@@ -153,10 +160,28 @@ namespace primitive
         if (!m_factory)
         {
             throw std::runtime_error(
+                "Renderer is not initialized.");
+        }
+
+        return m_factory->CreateVertexArray();
+    }
+
+    std::unique_ptr<IndexBuffer>
+    Renderer::CreateIndexBuffer(
+        const std::uint32_t* indices,
+        std::uint32_t count
+    )
+    {
+        if(!m_factory)
+        {
+            throw std::runtime_error(
                 "Renderer is not initialized."
             );
         }
 
-        return m_factory->CreateVertexArray();
+        return m_factory->CreateIndexBuffer(
+            indices,
+            count
+        );
     }
 }

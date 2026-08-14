@@ -18,6 +18,7 @@
 #include "Primitive/Renderer/Shader.hpp"
 #include "Primitive/Renderer/VertexBuffer.hpp"
 #include "Primitive/Renderer/VertexArray.hpp"
+#include "Primitive/Renderer/IndexBuffer.hpp"
 
 namespace primitive
 {
@@ -62,6 +63,8 @@ namespace primitive
         std::unique_ptr<VertexArray>
             m_testVertexArray;
 
+        std::unique_ptr<IndexBuffer>
+            m_testIndexBuffer;
         ResourceManager m_resourceManager;
     };
 }

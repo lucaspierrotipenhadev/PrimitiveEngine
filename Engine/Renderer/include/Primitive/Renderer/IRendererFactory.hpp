@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 
 namespace primitive
@@ -9,6 +10,7 @@ namespace primitive
     class IResourceLoader;
     class VertexBuffer;
     class VertexArray;
+    class IndexBuffer;
 
     class IRendererFactory
     {
@@ -34,6 +36,12 @@ namespace primitive
 
         virtual std::unique_ptr<VertexArray>
         CreateVertexArray() = 0;
+
+        virtual std::unique_ptr<IndexBuffer>
+        CreateIndexBuffer(
+            const std::uint32_t* indices,
+            std::uint32_t count
+        ) = 0;
 
         virtual std::shared_ptr<IResourceLoader>
         CreateShaderLoader() = 0;

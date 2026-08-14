@@ -6,6 +6,7 @@
 #include "Primitive/Renderer/VertexBuffer.hpp"
 #include "Primitive/Renderer/VertexArray.hpp"
 #include "Primitive/Renderer/VertexBufferLayout.hpp"
+#include "Primitive/Renderer/IndexBuffer.hpp"
 
 #include <stdexcept>
 
@@ -17,24 +18,20 @@ namespace primitive
           m_input(),
           m_sdlInput(
               m_input,
-              m_eventBus
-          ),
+              m_eventBus),
           m_window(
-              m_configuration.window
-          ),
+              m_configuration.window),
           m_renderer(),
           m_resourceManager()
     {
         m_logger.Info(
-            "Engine constructed."
-        );
+            "Engine constructed.");
     }
 
     Engine::~Engine()
     {
         m_logger.Info(
-            "[Engine] Destroying engine..."
-        );
+            "[Engine] Destroying engine...");
     }
 
     void Engine::Run()
@@ -44,8 +41,7 @@ namespace primitive
         m_running = true;
 
         m_logger.Info(
-            "[Engine] Starting main loop..."
-        );
+            "[Engine] Starting main loop...");
 
         while (m_running)
         {
@@ -56,8 +52,7 @@ namespace primitive
             ProcessEvents();
 
             Update(
-                m_time.GetDeltaTime()
-            );
+                m_time.GetDeltaTime());
 
             Render();
         }
@@ -73,54 +68,52 @@ namespace primitive
     void Engine::Initialize()
     {
         m_eventBus.Subscribe<
-            WindowClosedEvent
-        >(
+            WindowClosedEvent>(
             [this](
-                const WindowClosedEvent&)
+                const WindowClosedEvent &)
             {
                 Stop();
-            }
-        );
+            });
 
         // Renderer escolhe e inicializa
         // o backend através da factory.
         m_renderer.Initialize(
             m_configuration.renderer.backend,
-            m_resourceManager
-        );
+            m_resourceManager);
 
         // Engine conhece somente Shader.
         m_testShader =
             m_resourceManager.Load<Shader>(
-                "Assets/Shaders/basic.glsl"
-            );
+                "Assets/Shaders/basic.glsl");
 
         if (!m_testShader)
         {
             throw std::runtime_error(
-                "Failed to load shader."
-            );
+                "Failed to load shader.");
         }
 
         const float vertices[] =
-        {
-            -0.5f, -0.5f, 0.0f,
-             0.5f, -0.5f, 0.0f,
-             0.0f,  0.5f, 0.0f
-        };
+            {
+                -0.5f, -0.5f, 0.0f,
+                0.5f, -0.5f, 0.0f,
+                0.5f, 0.5f, 0.0f,
+                -0.5f, 0.5f, 0.0f};
+
+        const std::uint32_t indices[] =
+            {
+                0, 1, 2,
+                2, 3, 0};
 
         // Engine conhece somente VertexBuffer.
         m_testVertexBuffer =
             m_renderer.CreateVertexBuffer(
                 vertices,
-                sizeof(vertices)
-            );
+                sizeof(vertices));
 
         VertexBufferLayout layout;
 
         layout.Push(
-            ShaderDataType::Float3
-        );
+            ShaderDataType::Float3);
 
         // Engine conhece somente VertexArray.
         m_testVertexArray =
@@ -128,16 +121,16 @@ namespace primitive
 
         m_testVertexArray->AddVertexBuffer(
             *m_testVertexBuffer,
-            layout
-        );
+            layout);
+        
+        m_testIndexBuffer =
+        m_renderer.CreateIndexBuffer(indices, 6);
 
         m_logger.Info(
-            "[Engine] Triangle pipeline initialized."
-        );
+            "[Engine] Triangle pipeline initialized.");
 
         m_logger.Info(
-            "[Engine] Initialized."
-        );
+            "[Engine] Initialized.");
     }
 
     void Engine::Shutdown()
@@ -145,6 +138,7 @@ namespace primitive
         m_testVertexArray.reset();
         m_testVertexBuffer.reset();
         m_testShader.reset();
+        m_testIndexBuffer.reset();
 
         // Libera recursos gráficos
         // enquanto o backend/contexto
@@ -154,8 +148,7 @@ namespace primitive
         m_renderer.Shutdown();
 
         m_logger.Info(
-            "[Engine] Shutting down..."
-        );
+            "[Engine] Shutting down...");
     }
 
     void Engine::ProcessEvents()
@@ -176,8 +169,7 @@ namespace primitive
             0.10f,
             0.15f,
             0.15f,
-            1.0f
-        );
+            1.0f);
 
         if (m_testShader &&
             m_testVertexArray)
@@ -186,8 +178,12 @@ namespace primitive
 
             m_testVertexArray->Bind();
 
-            m_renderer.Draw(3);
+            m_testIndexBuffer->Bind();
 
+            m_renderer.DrawIndexed(
+                *m_testIndexBuffer);
+
+            m_testIndexBuffer->Unbind();
             m_testVertexArray->Unbind();
 
             m_testShader->Unbind();
@@ -198,7 +194,7 @@ namespace primitive
         m_window.SwapBuffers();
     }
 
-    Input& Engine::GetInput()
+    Input &Engine::GetInput()
     {
         return m_input;
     }

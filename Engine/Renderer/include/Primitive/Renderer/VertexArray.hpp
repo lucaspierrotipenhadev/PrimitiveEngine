@@ -5,6 +5,7 @@
 
 namespace primitive
 {
+    class IndexBuffer;
     class VertexArray
     {
     public:
@@ -22,6 +23,10 @@ namespace primitive
         virtual void AddVertexBuffer(
             const VertexBuffer& vertexBuffer,
             const VertexBufferLayout& layout
+        ) = 0;
+
+        virtual void SetIndexBuffer(
+            const IndexBuffer& indexBuffer
         ) = 0;
     };
 }
