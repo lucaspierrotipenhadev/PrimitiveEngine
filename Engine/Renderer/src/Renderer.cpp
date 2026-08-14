@@ -1,30 +1,95 @@
 #include "Primitive/Renderer/Renderer.hpp"
 
-#include "Primitive/Renderer/OpenGL/OpenGLRenderer.hpp"
+#include <stdexcept>
+
+#include "Primitive/Core/Configuration.hpp"
+
+#include "Primitive/Resources/ResourceManager.hpp"
+
+#include "Primitive/Renderer/Shader.hpp"
+#include "Primitive/Renderer/IRendererAPI.hpp"
+#include "Primitive/Renderer/IRendererFactory.hpp"
+
+#include "Primitive/Renderer/VertexArray.hpp"
+#include "Primitive/Renderer/OpenGL/OpenGLRendererFactory.hpp"
 
 namespace primitive
 {
-    void Renderer::Initialize()
+    namespace
     {
-        if(!m_api)
+        std::unique_ptr<IRendererFactory>
+        CreateRendererFactory(
+            RendererBackend backend)
         {
-            m_api = std::make_unique<OpenGLRenderer>();
+            switch (backend)
+            {
+            case RendererBackend::OpenGL:
+                return std::make_unique<
+                    OpenGLRendererFactory
+                >();
+
+            default:
+                throw std::runtime_error(
+                    "Unsupported renderer backend."
+                );
+            }
         }
+    }
+
+    Renderer::Renderer() = default;
+    Renderer::~Renderer() = default;
+
+    void Renderer::Initialize(
+        RendererBackend backend,
+        ResourceManager& resourceManager)
+    {
+        if (m_api || m_factory)
+        {
+            throw std::runtime_error(
+                "Renderer is already initialized."
+            );
+        }
+
+        m_factory =
+            CreateRendererFactory(backend);
+
+        m_api =
+            m_factory->CreateRendererAPI();
+
+        if (!m_api)
+        {
+            throw std::runtime_error(
+                "Renderer factory failed to create Renderer API."
+            );
+        }
+
         m_api->Initialize();
+
+        auto shaderLoader =
+            m_factory->CreateShaderLoader();
+
+        if(!shaderLoader)
+        {
+            throw std::runtime_error("Renderer factory failed to create shader loader");
+        }
+
+        resourceManager.RegisterLoader<Shader>(std::move(shaderLoader));
     }
 
     void Renderer::Shutdown()
     {
-        if(m_api)
+        if (m_api)
         {
             m_api->Shutdown();
             m_api.reset();
         }
+
+        m_factory.reset();
     }
 
     void Renderer::BeginFrame()
     {
-        if(m_api)
+        if (m_api)
         {
             m_api->BeginFrame();
         }
@@ -32,17 +97,66 @@ namespace primitive
 
     void Renderer::EndFrame()
     {
-        if(m_api)
+        if (m_api)
         {
             m_api->EndFrame();
         }
     }
 
-    void Renderer::Clear(float r, float g, float b, float a)
+    void Renderer::Clear(
+        float r,
+        float g,
+        float b,
+        float a)
     {
-        if(m_api)
+        if (m_api)
         {
-            m_api->Clear(r, g, b, a);
+            m_api->Clear(
+                r,
+                g,
+                b,
+                a
+            );
         }
+    }
+
+    void Renderer::Draw(
+        std::uint32_t vertexCount)
+    {
+        if (m_api)
+        {
+            m_api->Draw(vertexCount);
+        }
+    }
+
+    std::unique_ptr<VertexBuffer>
+    Renderer::CreateVertexBuffer(
+        const void* data,
+        std::size_t size)
+    {
+        if (!m_factory)
+        {
+            throw std::runtime_error(
+                "Renderer is not initialized."
+            );
+        }
+
+        return m_factory->CreateVertexBuffer(
+            data,
+            size
+        );
+    }
+
+    std::unique_ptr<VertexArray>
+    Renderer::CreateVertexArray()
+    {
+        if (!m_factory)
+        {
+            throw std::runtime_error(
+                "Renderer is not initialized."
+            );
+        }
+
+        return m_factory->CreateVertexArray();
     }
 }

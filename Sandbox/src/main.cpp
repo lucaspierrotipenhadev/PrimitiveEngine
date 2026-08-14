@@ -12,6 +12,7 @@ int main()
     catch (const std::exception& e)
     {
         std::cerr << "\n[ENGINE CRITICAL ERROR] " << e.what() << "\n" << std::endl;
+        std::cin.get();
         return -1;
     }
     std::cin.get();

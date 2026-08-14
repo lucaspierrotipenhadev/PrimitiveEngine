@@ -17,5 +17,6 @@ namespace primitive
             void EndFrame() override;
 
             void Clear(float r, float g, float b, float a) override;
+            void Draw(std::uint32_t vertexCount) override;
     };
 }

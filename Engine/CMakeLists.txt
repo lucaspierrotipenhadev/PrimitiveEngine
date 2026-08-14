@@ -16,8 +16,13 @@ add_library(PrimitiveEngine STATIC
     Resources/src/ResourceManager.cpp
     
     Renderer/src/Renderer.cpp
+    Renderer/src/VertexBufferLayout.cpp
     Renderer/src/OpenGL/OpenGLRenderer.cpp
     Renderer/src/OpenGL/OpenGLShader.cpp
+    Renderer/src/OpenGL/OpenGLShaderLoader.cpp
+    Renderer/src/OpenGL/OpenGLVertexBuffer.cpp
+    Renderer/src/OpenGL/OpenGLVertexArray.cpp
+    Renderer/src/OpenGL/OpenGLRendererFactory.cpp
 )
 
 target_include_directories(PrimitiveEngine

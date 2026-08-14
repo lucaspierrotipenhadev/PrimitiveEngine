@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <string_view>
+
 #include "Primitive/Renderer/Shader.hpp"
 
 namespace primitive
@@ -7,7 +10,12 @@ namespace primitive
     class OpenGLShader final : public Shader
     {
     public:
-        explicit OpenGLShader(std::string_view filepath);
+        OpenGLShader(
+            std::string_view filepath,
+            std::string_view vertexSource,
+            std::string_view fragmentSource
+        );
+
         ~OpenGLShader() override;
 
         void Bind() override;

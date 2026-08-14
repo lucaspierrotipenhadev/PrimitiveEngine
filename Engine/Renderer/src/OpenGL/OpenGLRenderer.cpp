@@ -53,4 +53,13 @@ namespace primitive
         glClearColor(r, g, b, a);
         glClear(GL_COLOR_BUFFER_BIT);
     }
+
+    void OpenGLRenderer::Draw(std::uint32_t vertexCount)
+    {
+        glDrawArrays(
+            GL_TRIANGLES,
+            0,
+            static_cast<GLsizei>(vertexCount)
+        );
+    }
 }

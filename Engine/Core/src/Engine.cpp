@@ -1,9 +1,13 @@
 #include "Primitive/Core/Engine.hpp"
 
 #include "Primitive/Core/Events/WindowEvents.hpp"
-#include "Primitive/Renderer/OpenGL/OpenGLShader.hpp"
 
-#include <SDL3/SDL.h>
+#include "Primitive/Renderer/Shader.hpp"
+#include "Primitive/Renderer/VertexBuffer.hpp"
+#include "Primitive/Renderer/VertexArray.hpp"
+#include "Primitive/Renderer/VertexBufferLayout.hpp"
+
+#include <stdexcept>
 
 namespace primitive
 {
@@ -11,17 +15,26 @@ namespace primitive
         : m_configuration(),
           m_platform(),
           m_input(),
-          m_sdlInput(m_input, m_eventBus),
-          m_window(m_configuration.window),
+          m_sdlInput(
+              m_input,
+              m_eventBus
+          ),
+          m_window(
+              m_configuration.window
+          ),
           m_renderer(),
           m_resourceManager()
     {
-        m_logger.Info("Engine constructed.");
+        m_logger.Info(
+            "Engine constructed."
+        );
     }
 
     Engine::~Engine()
     {
-        m_logger.Info("[Engine] Destroying engine...\n");
+        m_logger.Info(
+            "[Engine] Destroying engine..."
+        );
     }
 
     void Engine::Run()
@@ -30,7 +43,9 @@ namespace primitive
 
         m_running = true;
 
-        m_logger.Info("[Engine] Starting main loop...");
+        m_logger.Info(
+            "[Engine] Starting main loop..."
+        );
 
         while (m_running)
         {
@@ -40,7 +55,9 @@ namespace primitive
 
             ProcessEvents();
 
-            Update(m_time.GetDeltaTime());
+            Update(
+                m_time.GetDeltaTime()
+            );
 
             Render();
         }
@@ -55,29 +72,90 @@ namespace primitive
 
     void Engine::Initialize()
     {
-        m_eventBus.Subscribe<WindowClosedEvent>(
-            [this](const WindowClosedEvent &)
+        m_eventBus.Subscribe<
+            WindowClosedEvent
+        >(
+            [this](
+                const WindowClosedEvent&)
             {
                 Stop();
-            });
+            }
+        );
 
-        m_renderer.Initialize();
+        // Renderer escolhe e inicializa
+        // o backend através da factory.
+        m_renderer.Initialize(
+            m_configuration.renderer.backend,
+            m_resourceManager
+        );
 
-        auto shader = std::make_shared<OpenGLShader>(
-            "assets/shaders/basic.glsl");
+        // Engine conhece somente Shader.
+        m_testShader =
+            m_resourceManager.Load<Shader>(
+                "Assets/Shaders/basic.glsl"
+            );
 
-        shader->Bind();
-        shader->Unbind();
+        if (!m_testShader)
+        {
+            throw std::runtime_error(
+                "Failed to load shader."
+            );
+        }
 
-        m_logger.Info("[Engine] Shader test passed.");
+        const float vertices[] =
+        {
+            -0.5f, -0.5f, 0.0f,
+             0.5f, -0.5f, 0.0f,
+             0.0f,  0.5f, 0.0f
+        };
 
-        m_logger.Info("[Engine] Initialized.");
+        // Engine conhece somente VertexBuffer.
+        m_testVertexBuffer =
+            m_renderer.CreateVertexBuffer(
+                vertices,
+                sizeof(vertices)
+            );
+
+        VertexBufferLayout layout;
+
+        layout.Push(
+            ShaderDataType::Float3
+        );
+
+        // Engine conhece somente VertexArray.
+        m_testVertexArray =
+            m_renderer.CreateVertexArray();
+
+        m_testVertexArray->AddVertexBuffer(
+            *m_testVertexBuffer,
+            layout
+        );
+
+        m_logger.Info(
+            "[Engine] Triangle pipeline initialized."
+        );
+
+        m_logger.Info(
+            "[Engine] Initialized."
+        );
     }
 
     void Engine::Shutdown()
     {
+        m_testVertexArray.reset();
+        m_testVertexBuffer.reset();
+        m_testShader.reset();
+
+        // Libera recursos gráficos
+        // enquanto o backend/contexto
+        // ainda estão disponíveis.
+        m_resourceManager.Clear();
+
         m_renderer.Shutdown();
-        m_logger.Info("[Engine] Shutting down...\n");
+
+        m_logger.Info(
+            "[Engine] Shutting down..."
+        );
     }
 
     void Engine::ProcessEvents()
@@ -93,13 +171,34 @@ namespace primitive
     void Engine::Render()
     {
         m_renderer.BeginFrame();
-        m_renderer.Clear(1.0f, 0.0f, 0.0f, 1.0f);
+
+        m_renderer.Clear(
+            0.10f,
+            0.15f,
+            0.15f,
+            1.0f
+        );
+
+        if (m_testShader &&
+            m_testVertexArray)
+        {
+            m_testShader->Bind();
+
+            m_testVertexArray->Bind();
+
+            m_renderer.Draw(3);
+
+            m_testVertexArray->Unbind();
+
+            m_testShader->Unbind();
+        }
+
         m_renderer.EndFrame();
 
         m_window.SwapBuffers();
     }
 
-    Input &Engine::GetInput()
+    Input& Engine::GetInput()
     {
         return m_input;
     }
