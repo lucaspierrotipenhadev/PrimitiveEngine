@@ -6,9 +6,15 @@
 
 #include "Primitive/Resources/ResourceManager.hpp"
 
+#include "Primitive/Renderer/Mesh.hpp"
 #include "Primitive/Renderer/Shader.hpp"
 #include "Primitive/Renderer/IRendererAPI.hpp"
 #include "Primitive/Renderer/IRendererFactory.hpp"
+
+#include "Primitive/Renderer/VertexArray.hpp"
+#include "Primitive/Renderer/VertexBuffer.hpp"
+#include "Primitive/Renderer/IndexBuffer.hpp"
+#include "Primitive/Renderer/VertexBufferLayout.hpp"
 
 #include "Primitive/Renderer/VertexArray.hpp"
 #include "Primitive/Renderer/IndexBuffer.hpp"
@@ -101,6 +107,14 @@ namespace primitive
         }
     }
 
+    void Renderer::DepthTest(bool enable)
+    {
+        if (m_api)
+        {
+            m_api->SetDepthTest(enable);
+        }
+    }
+
     void Renderer::Clear(
         float r,
         float g,
@@ -127,14 +141,12 @@ namespace primitive
     }
 
     void Renderer::DrawIndexed(
-        const IndexBuffer& indexBuffer
-    )
+        const IndexBuffer &indexBuffer)
     {
-        if(m_api)
+        if (m_api)
         {
             m_api->DrawIndexed(
-                indexBuffer.GetCount()
-            );
+                indexBuffer.GetCount());
         }
     }
 
@@ -168,20 +180,51 @@ namespace primitive
 
     std::unique_ptr<IndexBuffer>
     Renderer::CreateIndexBuffer(
-        const std::uint32_t* indices,
-        std::uint32_t count
-    )
+        const std::uint32_t *indices,
+        std::uint32_t count)
     {
-        if(!m_factory)
+        if (!m_factory)
         {
             throw std::runtime_error(
-                "Renderer is not initialized."
-            );
+                "Renderer is not initialized.");
         }
 
         return m_factory->CreateIndexBuffer(
             indices,
-            count
-        );
+            count);
+    }
+
+    std::unique_ptr<Mesh>
+    Renderer::CreateMesh(
+        const void *vertices,
+        std::size_t vertexSize,
+        const VertexBufferLayout &layout,
+        const std::uint32_t *indices,
+        std::uint32_t indexCount)
+    {
+        auto vertexBuffer =
+            CreateVertexBuffer(
+                vertices,
+                vertexSize);
+
+        auto indexBuffer =
+            CreateIndexBuffer(
+                indices,
+                indexCount);
+
+        auto vertexArray =
+            CreateVertexArray();
+
+        vertexArray->AddVertexBuffer(
+            *vertexBuffer,
+            layout);
+
+        vertexArray->SetIndexBuffer(
+            *indexBuffer);
+
+        return std::make_unique<Mesh>(
+            std::move(vertexArray),
+            std::move(vertexBuffer),
+            std::move(indexBuffer));
     }
 }

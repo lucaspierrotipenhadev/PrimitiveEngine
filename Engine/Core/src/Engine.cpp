@@ -8,6 +8,10 @@
 #include "Primitive/Renderer/VertexBufferLayout.hpp"
 #include "Primitive/Renderer/IndexBuffer.hpp"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <stdexcept>
 
 namespace primitive
@@ -81,6 +85,8 @@ namespace primitive
             m_configuration.renderer.backend,
             m_resourceManager);
 
+        m_renderer.DepthTest(true);
+
         // Engine conhece somente Shader.
         m_testShader =
             m_resourceManager.Load<Shader>(
@@ -94,37 +100,94 @@ namespace primitive
 
         const float vertices[] =
             {
-                -0.5f, -0.5f, 0.0f,
-                0.5f, -0.5f, 0.0f,
-                0.5f, 0.5f, 0.0f,
-                -0.5f, 0.5f, 0.0f};
+                // Frente
+                -0.5f, -0.5f, -0.5f, // 0
+                0.5f, -0.5f, -0.5f,  // 1
+                0.5f, 0.5f, -0.5f,   // 2
+                -0.5f, 0.5f, -0.5f,  // 3
+
+                // Trás
+                -0.5f, -0.5f, 0.5f, // 4
+                0.5f, -0.5f, 0.5f,  // 5
+                0.5f, 0.5f, 0.5f,   // 6
+                -0.5f, 0.5f, 0.5f   // 7
+            };
 
         const std::uint32_t indices[] =
             {
+                // Frente
                 0, 1, 2,
-                2, 3, 0};
+                2, 3, 0,
 
-        // Engine conhece somente VertexBuffer.
-        m_testVertexBuffer =
-            m_renderer.CreateVertexBuffer(
-                vertices,
-                sizeof(vertices));
+                // Direita
+                1, 5, 6,
+                6, 2, 1,
+
+                // Trás
+                5, 4, 7,
+                7, 6, 5,
+
+                // Esquerda
+                4, 0, 3,
+                3, 7, 4,
+
+                // Topo
+                3, 2, 6,
+                6, 7, 3,
+
+                // Fundo
+                4, 5, 1,
+                1, 0, 4};
 
         VertexBufferLayout layout;
 
         layout.Push(
             ShaderDataType::Float3);
 
-        // Engine conhece somente VertexArray.
-        m_testVertexArray =
-            m_renderer.CreateVertexArray();
+        m_testMesh =
+            m_renderer.CreateMesh(
+                vertices,
+                sizeof(vertices),
+                layout,
+                indices,
+                36);
 
-        m_testVertexArray->AddVertexBuffer(
-            *m_testVertexBuffer,
-            layout);
-        
-        m_testIndexBuffer =
-        m_renderer.CreateIndexBuffer(indices, 6);
+        const float aspectRatio =
+            static_cast<float>(m_window.GetWidth()) /
+            static_cast<float>(m_window.GetHeight());
+
+        m_testCamera.SetProjection(
+            glm::perspective(
+                glm::radians(45.0f),
+                aspectRatio,
+                0.1f,
+                100.0f));
+
+        m_testCamera
+            .GetTransform()
+            .SetPosition(
+                glm::vec3{
+                    0.25f,
+                    0.0f,
+                    0.0f});
+
+        m_testTransform.SetPosition(
+            glm::vec3(
+                0.25f,
+                0.0f,
+                -10.0f));
+
+        m_testTransform.SetRotation(
+            glm::vec3(
+                0.0f,
+                0.0f,
+                30.0f));
+
+        m_testTransform.SetScale(
+            glm::vec3(
+                0.75f,
+                0.75f,
+                1.0f));
 
         m_logger.Info(
             "[Engine] Triangle pipeline initialized.");
@@ -135,10 +198,8 @@ namespace primitive
 
     void Engine::Shutdown()
     {
-        m_testVertexArray.reset();
-        m_testVertexBuffer.reset();
         m_testShader.reset();
-        m_testIndexBuffer.reset();
+        m_testMesh.reset();
 
         // Libera recursos gráficos
         // enquanto o backend/contexto
@@ -159,6 +220,11 @@ namespace primitive
     void Engine::Update(float deltaTime)
     {
         (void)deltaTime;
+        m_testTransform.Rotate(
+            glm::vec3{
+                25.0f * deltaTime,
+                40.0f * deltaTime,
+                15.0f * deltaTime});
     }
 
     void Engine::Render()
@@ -171,20 +237,35 @@ namespace primitive
             0.15f,
             1.0f);
 
-        if (m_testShader &&
-            m_testVertexArray)
+        if (m_testShader)
         {
             m_testShader->Bind();
 
-            m_testVertexArray->Bind();
+            const glm::mat4 model =
+                m_testTransform.GetMatrix();
 
-            m_testIndexBuffer->Bind();
+            m_testShader->SetMat4(
+                "u_View",
+                glm::value_ptr(
+                    m_testCamera.GetView()));
+
+            m_testShader->SetMat4(
+                "u_Projection",
+                glm::value_ptr(
+                    m_testCamera.GetProjection()));
+
+            m_testShader->SetMat4(
+                "u_Model",
+                glm::value_ptr(model));
+
+            m_testShader->SetFloat4("u_Color", 0.0f, 1.0f, 0.0f, 1.0f);
+
+            m_testMesh->Bind();
 
             m_renderer.DrawIndexed(
-                *m_testIndexBuffer);
+                m_testMesh->GetIndexBuffer());
 
-            m_testIndexBuffer->Unbind();
-            m_testVertexArray->Unbind();
+            m_testMesh->Unbind();
 
             m_testShader->Unbind();
         }

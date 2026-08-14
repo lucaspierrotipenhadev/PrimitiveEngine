@@ -16,15 +16,14 @@ namespace primitive
             const unsigned int shader =
                 glCreateShader(type);
 
-            const char* sourceCode =
+            const char *sourceCode =
                 source.data();
 
             glShaderSource(
                 shader,
                 1,
                 &sourceCode,
-                nullptr
-            );
+                nullptr);
 
             glCompileShader(shader);
 
@@ -33,8 +32,7 @@ namespace primitive
             glGetShaderiv(
                 shader,
                 GL_COMPILE_STATUS,
-                &success
-            );
+                &success);
 
             if (!success)
             {
@@ -44,16 +42,14 @@ namespace primitive
                     shader,
                     sizeof(infoLog),
                     nullptr,
-                    infoLog
-                );
+                    infoLog);
 
                 glDeleteShader(shader);
 
                 throw std::runtime_error(
                     std::string(
-                        "Failed to compile shader: "
-                    ) + infoLog
-                );
+                        "Failed to compile shader: ") +
+                    infoLog);
             }
 
             return shader;
@@ -69,26 +65,22 @@ namespace primitive
         const unsigned int vertexShader =
             CompileShader(
                 GL_VERTEX_SHADER,
-                vertexSource
-            );
+                vertexSource);
 
         const unsigned int fragmentShader =
             CompileShader(
                 GL_FRAGMENT_SHADER,
-                fragmentSource
-            );
+                fragmentSource);
 
         m_program = glCreateProgram();
 
         glAttachShader(
             m_program,
-            vertexShader
-        );
+            vertexShader);
 
         glAttachShader(
             m_program,
-            fragmentShader
-        );
+            fragmentShader);
 
         glLinkProgram(m_program);
 
@@ -97,8 +89,7 @@ namespace primitive
         glGetProgramiv(
             m_program,
             GL_LINK_STATUS,
-            &success
-        );
+            &success);
 
         if (!success)
         {
@@ -108,8 +99,7 @@ namespace primitive
                 m_program,
                 sizeof(infoLog),
                 nullptr,
-                infoLog
-            );
+                infoLog);
 
             glDeleteProgram(m_program);
             m_program = 0;
@@ -119,9 +109,8 @@ namespace primitive
 
             throw std::runtime_error(
                 std::string(
-                    "Failed to link shader program: "
-                ) + infoLog
-            );
+                    "Failed to link shader program: ") +
+                infoLog);
         }
 
         glDeleteShader(vertexShader);
@@ -144,5 +133,98 @@ namespace primitive
     void OpenGLShader::Unbind()
     {
         glUseProgram(0);
+    }
+
+    int OpenGLShader::GetUniformLocation(
+        std::string_view name)
+    {
+        const std::string uniformName{name};
+
+        const auto it =
+            m_uniformLocationCache.find(uniformName);
+
+        if (it != m_uniformLocationCache.end())
+        {
+            return it->second;
+        }
+
+        const int location =
+            glGetUniformLocation(
+                m_program,
+                uniformName.c_str());
+
+        m_uniformLocationCache.emplace(
+            uniformName,
+            location);
+
+        return location;
+    }
+
+    void OpenGLShader::SetInt(
+        std::string_view name,
+        int value)
+    {
+        glUniform1i(
+            GetUniformLocation(name),
+            value);
+    }
+
+    void OpenGLShader::SetFloat(
+        std::string_view name,
+        float value)
+    {
+        glUniform1f(
+            GetUniformLocation(name),
+            value);
+    }
+
+    void OpenGLShader::SetFloat2(
+        std::string_view name,
+        float x,
+        float y)
+    {
+        glUniform2f(
+            GetUniformLocation(name),
+            x,
+            y);
+    }
+
+    void OpenGLShader::SetFloat3(
+        std::string_view name,
+        float x,
+        float y,
+        float z)
+    {
+        glUniform3f(
+            GetUniformLocation(name),
+            x,
+            y,
+            z);
+    }
+
+    void OpenGLShader::SetFloat4(
+        std::string_view name,
+        float x,
+        float y,
+        float z,
+        float w)
+    {
+        glUniform4f(
+            GetUniformLocation(name),
+            x,
+            y,
+            z,
+            w);
+    }
+
+    void OpenGLShader::SetMat4(
+        std::string_view name,
+        const float *value)
+    {
+        glUniformMatrix4fv(
+            GetUniformLocation(name),
+            1,
+            GL_FALSE,
+            value);
     }
 }

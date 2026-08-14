@@ -12,6 +12,8 @@ namespace primitive
     class VertexBuffer;
     class VertexArray;
     class IndexBuffer;
+    class Mesh;
+    class VertexBufferLayout;
 
     enum class RendererBackend;
 
@@ -30,9 +32,11 @@ namespace primitive
         void BeginFrame();
         void EndFrame();
 
+        void DepthTest(bool enable);
+
         void Clear(float r, float g, float b, float a);
         void Draw(std::uint32_t vertexCount);
-        void DrawIndexed(const IndexBuffer& indexBuffer);
+        void DrawIndexed(const IndexBuffer &indexBuffer);
 
         std::unique_ptr<VertexBuffer>
         CreateVertexBuffer(
@@ -41,12 +45,19 @@ namespace primitive
 
         std::unique_ptr<IndexBuffer>
         CreateIndexBuffer(
-            const std::uint32_t* indices,
-            std::uint32_t count
-        );
+            const std::uint32_t *indices,
+            std::uint32_t count);
 
         std::unique_ptr<VertexArray>
         CreateVertexArray();
+
+        std::unique_ptr<Mesh>
+        CreateMesh(
+            const void *vertices,
+            std::size_t vertexSize,
+            const VertexBufferLayout &layout,
+            const std::uint32_t *indices,
+            std::uint32_t indexCount);
 
     private:
         std::unique_ptr<IRendererAPI> m_api;

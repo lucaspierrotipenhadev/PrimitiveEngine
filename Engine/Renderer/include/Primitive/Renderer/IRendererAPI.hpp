@@ -18,6 +18,8 @@ namespace primitive
         virtual void BeginFrame() = 0;
         virtual void EndFrame() = 0;
 
+        virtual void SetDepthTest(bool enable) = 0;
+
         virtual void Clear(float r, float g, float b, float a) = 0;
         virtual void Draw(std::uint32_t vertexCount) = 0;
         virtual void DrawIndexed(std::uint32_t indexCount) = 0;

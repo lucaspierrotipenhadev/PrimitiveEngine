@@ -17,6 +17,8 @@ add_library(PrimitiveEngine STATIC
     
     Renderer/src/Renderer.cpp
     Renderer/src/VertexBufferLayout.cpp
+    Renderer/src/Camera.cpp
+    Renderer/src/Mesh.cpp
     Renderer/src/OpenGL/OpenGLRenderer.cpp
     Renderer/src/OpenGL/OpenGLShader.cpp
     Renderer/src/OpenGL/OpenGLShaderLoader.cpp
@@ -24,6 +26,8 @@ add_library(PrimitiveEngine STATIC
     Renderer/src/OpenGL/OpenGLVertexArray.cpp
     Renderer/src/OpenGL/OpenGLRendererFactory.cpp
     Renderer/src/OpenGL/OpenGLIndexBuffer.cpp
+
+    Scene/src/Transform.cpp
 )
 
 target_include_directories(PrimitiveEngine
@@ -32,6 +36,7 @@ target_include_directories(PrimitiveEngine
         ${CMAKE_CURRENT_SOURCE_DIR}/Platform/include
         ${CMAKE_CURRENT_SOURCE_DIR}/Resources/include
         ${CMAKE_CURRENT_SOURCE_DIR}/Renderer/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/Scene/include
 )
 
 target_compile_features(
@@ -45,4 +50,5 @@ target_link_libraries(
     PUBLIC
         SDL3::SDL3   
         glad_gl_core_46
+        glm::glm
 )

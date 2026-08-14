@@ -51,7 +51,19 @@ namespace primitive
         float a)
     {
         glClearColor(r, g, b, a);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+
+    void OpenGLRenderer::SetDepthTest(bool enable)
+    {
+        if(enable)
+        {
+            glEnable(GL_DEPTH_TEST);
+        }
+        else
+        {
+            glDisable(GL_DEPTH_TEST);
+        }
     }
 
     void OpenGLRenderer::Draw(std::uint32_t vertexCount)
