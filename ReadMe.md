@@ -37,8 +37,10 @@ Caso for aprender sobre o sistema, recomendo seguir o passo 2.
 
 Para compilar e rodar o sistema user:
 
-Para compilar: & "C:\Program Files\CMake\bin\cmake.exe" -S . -B build
+Para criar o build: & "C:\Program Files\CMake\bin\cmake.exe" -S . -B build
 
-Para rodar: & "C:\Program Files\CMake\bin\cmake.exe" --build build
+Para compilar: & "C:\Program Files\CMake\bin\cmake.exe" --build build
 
 Para refazer o build: Remove-Item -Recurse -Force build/
+
+Para destravar arquivos presos no terminal digite: Get-Process -Name "git", "cmake", "MSBuild" -ErrorAction SilentlyContinue | Stop-Process -Force

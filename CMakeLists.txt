@@ -10,6 +10,9 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Força bibliotecas estáticas por padrão para dependências do FetchContent
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+
 include(FetchContent)
 
 # --- SDL3 ---
@@ -32,10 +35,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glad)
 
-# Adiciona o diretório cmake do GLAD ao CMAKE_MODULE_PATH
 list(APPEND CMAKE_MODULE_PATH "${glad_SOURCE_DIR}/cmake")
 
-# Gera o código C do OpenGL 4.6 Core dinamicamente
 glad_add_library(
     glad_gl_core_46
     STATIC
@@ -45,6 +46,9 @@ glad_add_library(
 )
 
 # --- GLM ---
+# Garante que o GLM não tente compilar uma DLL/LIB própria
+set(GLM_BUILD_LIBRARY OFF CACHE BOOL "" FORCE)
+set(GLM_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 
 FetchContent_Declare(
     glm
@@ -52,8 +56,36 @@ FetchContent_Declare(
     GIT_TAG 1.0.3
     GIT_SHALLOW TRUE
 )
-
 FetchContent_MakeAvailable(glm)
+
+# --- Assimp ---
+# Configurações do Assimp e ZLIB embutido
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_ZLIB ON CACHE BOOL "" FORCE)          # Força o build do zlib interno
+set(ASSIMP_BUILD_ZLIB_STATIC ON CACHE BOOL "" FORCE)   # Garante zlib estático
+set(ASSIMP_BUILD_ALL_IMPORTERS_OFF ON CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_OBJ_IMPORTER ON CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_FBX_IMPORTER ON CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_GLTF_IMPORTER ON CACHE BOOL "" FORCE)
+
+FetchContent_Declare(
+    assimp
+    URL https://github.com/assimp/assimp/archive/refs/tags/v5.4.3.zip
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+FetchContent_MakeAvailable(assimp)
+
+# --- stb ---
+
+FetchContent_Declare(
+    stb
+    GIT_REPOSITORY https://github.com/nothings/stb.git
+    GIT_SHALLOW TRUE
+)
+
+FetchContent_MakeAvailable(stb)
 
 add_subdirectory(Engine)
 add_subdirectory(Sandbox)

@@ -11,6 +11,7 @@ namespace primitive
     class VertexBuffer;
     class VertexArray;
     class IndexBuffer;
+    class Texture;
 
     class IRendererFactory
     {
@@ -45,5 +46,8 @@ namespace primitive
 
         virtual std::shared_ptr<IResourceLoader>
         CreateShaderLoader() = 0;
+
+        virtual std::shared_ptr<IResourceLoader>
+        CreateTextureLoader() = 0;
     };
 }

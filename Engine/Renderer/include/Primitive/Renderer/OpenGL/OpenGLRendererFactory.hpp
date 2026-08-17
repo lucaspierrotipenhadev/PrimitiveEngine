@@ -26,5 +26,8 @@ namespace primitive
 
         std::shared_ptr<IResourceLoader>
         CreateShaderLoader() override;
+        
+        std::shared_ptr<IResourceLoader> 
+        CreateTextureLoader() override;
     };
 }

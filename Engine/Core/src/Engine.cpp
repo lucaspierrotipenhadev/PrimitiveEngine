@@ -3,10 +3,15 @@
 #include "Primitive/Core/Events/WindowEvents.hpp"
 
 #include "Primitive/Renderer/Shader.hpp"
+#include "Primitive/Renderer/Texture.hpp"
 #include "Primitive/Renderer/VertexBuffer.hpp"
 #include "Primitive/Renderer/VertexArray.hpp"
 #include "Primitive/Renderer/VertexBufferLayout.hpp"
 #include "Primitive/Renderer/IndexBuffer.hpp"
+
+#include "Primitive/Renderer/Model.hpp"
+#include "Primitive/Resources/ModelLoader.hpp"
+#include "Primitive/Renderer/Material.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -92,65 +97,43 @@ namespace primitive
             m_resourceManager.Load<Shader>(
                 "Assets/Shaders/basic.glsl");
 
+        m_testTexture =
+            m_resourceManager.Load<Texture>(
+                "Assets/Textures/checker.png");
+
+        if (!m_testTexture)
+        {
+            throw std::runtime_error(
+                "Failed to load texture.");
+        }
+
+        m_resourceManager.RegisterLoader<Model>(
+            std::make_shared<ModelLoader>(
+                m_renderer));
+
+        m_testModel =
+            m_resourceManager.Load<Model>(
+                "Assets/Models/cube.obj");
+
+        m_testMaterial =
+            std::make_unique<Material>(
+                m_testShader);
+
+        m_testMaterial->SetBaseColor(
+            glm::vec4{
+                1.0f,
+                1.0f,
+                1.0f,
+                1.0f});
+
+        m_testMaterial->SetAlbedoTexture(
+            m_testTexture);
+
         if (!m_testShader)
         {
             throw std::runtime_error(
                 "Failed to load shader.");
         }
-
-        const float vertices[] =
-            {
-                // Frente
-                -0.5f, -0.5f, -0.5f, // 0
-                0.5f, -0.5f, -0.5f,  // 1
-                0.5f, 0.5f, -0.5f,   // 2
-                -0.5f, 0.5f, -0.5f,  // 3
-
-                // Trás
-                -0.5f, -0.5f, 0.5f, // 4
-                0.5f, -0.5f, 0.5f,  // 5
-                0.5f, 0.5f, 0.5f,   // 6
-                -0.5f, 0.5f, 0.5f   // 7
-            };
-
-        const std::uint32_t indices[] =
-            {
-                // Frente
-                0, 1, 2,
-                2, 3, 0,
-
-                // Direita
-                1, 5, 6,
-                6, 2, 1,
-
-                // Trás
-                5, 4, 7,
-                7, 6, 5,
-
-                // Esquerda
-                4, 0, 3,
-                3, 7, 4,
-
-                // Topo
-                3, 2, 6,
-                6, 7, 3,
-
-                // Fundo
-                4, 5, 1,
-                1, 0, 4};
-
-        VertexBufferLayout layout;
-
-        layout.Push(
-            ShaderDataType::Float3);
-
-        m_testMesh =
-            m_renderer.CreateMesh(
-                vertices,
-                sizeof(vertices),
-                layout,
-                indices,
-                36);
 
         const float aspectRatio =
             static_cast<float>(m_window.GetWidth()) /
@@ -199,7 +182,8 @@ namespace primitive
     void Engine::Shutdown()
     {
         m_testShader.reset();
-        m_testMesh.reset();
+        m_testModel.reset();
+        m_testMaterial.reset();
 
         // Libera recursos gráficos
         // enquanto o backend/contexto
@@ -258,14 +242,10 @@ namespace primitive
                 "u_Model",
                 glm::value_ptr(model));
 
-            m_testShader->SetFloat4("u_Color", 0.0f, 1.0f, 0.0f, 1.0f);
+            m_testShader->SetFloat3("u_LightDirection", -1.0f, -1.0f, -1.0f);
+            m_testShader->SetFloat3("u_LightColor", 1.0f, 1.0f, 1.0f);
 
-            m_testMesh->Bind();
-
-            m_renderer.DrawIndexed(
-                m_testMesh->GetIndexBuffer());
-
-            m_testMesh->Unbind();
+            m_renderer.DrawModel(*m_testModel, *m_testMaterial);
 
             m_testShader->Unbind();
         }

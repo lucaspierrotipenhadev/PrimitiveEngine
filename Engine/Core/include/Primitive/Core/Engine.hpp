@@ -16,9 +16,12 @@
 #include "Primitive/Resources/ResourceManager.hpp"
 
 #include "Primitive/Renderer/Renderer.hpp"
+#include "Primitive/Renderer/Texture.hpp"
 #include "Primitive/Renderer/Shader.hpp"
 #include "Primitive/Renderer/Camera.hpp"
 #include "Primitive/Renderer/Mesh.hpp"
+#include "Primitive/Renderer/Model.hpp"
+#include "Primitive/Renderer/Material.hpp"
 #include "Primitive/Renderer/VertexBuffer.hpp"
 #include "Primitive/Renderer/VertexArray.hpp"
 #include "Primitive/Renderer/IndexBuffer.hpp"
@@ -65,8 +68,14 @@ namespace primitive
         std::shared_ptr<Shader>
             m_testShader;
 
-        std::unique_ptr<Mesh>
-            m_testMesh;
+        std::shared_ptr<Texture>
+            m_testTexture;
+
+        std::unique_ptr<Material>
+            m_testMaterial;
+
+        std::shared_ptr<Model>
+            m_testModel;
 
         ResourceManager m_resourceManager;
     };

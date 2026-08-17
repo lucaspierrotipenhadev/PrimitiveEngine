@@ -7,7 +7,11 @@
 #include "Primitive/Resources/ResourceManager.hpp"
 
 #include "Primitive/Renderer/Mesh.hpp"
+#include "Primitive/Renderer/Texture.hpp"
+#include "Primitive/Renderer/Model.hpp"
 #include "Primitive/Renderer/Shader.hpp"
+#include "Primitive/Renderer/Material.hpp"
+
 #include "Primitive/Renderer/IRendererAPI.hpp"
 #include "Primitive/Renderer/IRendererFactory.hpp"
 
@@ -16,8 +20,6 @@
 #include "Primitive/Renderer/IndexBuffer.hpp"
 #include "Primitive/Renderer/VertexBufferLayout.hpp"
 
-#include "Primitive/Renderer/VertexArray.hpp"
-#include "Primitive/Renderer/IndexBuffer.hpp"
 #include "Primitive/Renderer/OpenGL/OpenGLRendererFactory.hpp"
 #include "Primitive/Renderer/OpenGL/OpenGLIndexBuffer.hpp"
 
@@ -72,12 +74,16 @@ namespace primitive
         auto shaderLoader =
             m_factory->CreateShaderLoader();
 
+        auto textureLoader =
+            m_factory->CreateTextureLoader();
+
         if (!shaderLoader)
         {
             throw std::runtime_error("Renderer factory failed to create shader loader");
         }
 
         resourceManager.RegisterLoader<Shader>(std::move(shaderLoader));
+        resourceManager.RegisterLoader<Texture>(std::move(textureLoader));
     }
 
     void Renderer::Shutdown()
@@ -148,6 +154,54 @@ namespace primitive
             m_api->DrawIndexed(
                 indexBuffer.GetCount());
         }
+    }
+
+    void Renderer::DrawMesh(const Mesh &mesh)
+    {
+        mesh.Bind();
+
+        DrawIndexed(mesh.GetIndexBuffer());
+
+        mesh.Unbind();
+    }
+
+    void Renderer::DrawModel(
+        const Model &model,
+        const Material &material)
+    {
+        const auto &shader = material.GetShader();
+        shader->Bind();
+
+        const glm::vec4 &color = material.GetBaseColor();
+
+        shader->SetFloat4("u_Color", color.r, color.g, color.b, color.a);
+        if (material.GetAlbedoTexture())
+        {
+            material.GetAlbedoTexture()->Bind(0);
+
+            shader->SetInt(
+                "u_AlbedoTexture",
+                0);
+
+            shader->SetInt(
+                "u_HasAlbedoTexture",
+                1);
+        }
+        else
+        {
+            shader->SetInt(
+                "u_HasAlbedoTexture",
+                0);
+        }
+        
+        for (const auto &mesh :
+             model.GetMeshes())
+        {
+            DrawMesh(
+                *mesh);
+        }
+
+        shader->Unbind();
     }
 
     std::unique_ptr<VertexBuffer>

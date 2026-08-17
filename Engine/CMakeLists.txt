@@ -14,11 +14,17 @@ add_library(PrimitiveEngine STATIC
     Platform/src/SDL/SDLInput.cpp
 
     Resources/src/ResourceManager.cpp
+    Resources/src/ModelLoader.cpp
+    Resources/src/TextureLoader.cpp
     
     Renderer/src/Renderer.cpp
     Renderer/src/VertexBufferLayout.cpp
     Renderer/src/Camera.cpp
     Renderer/src/Mesh.cpp
+    Renderer/src/Model.cpp
+    Renderer/src/Material.cpp
+    Renderer/src/OpenGL/OpenGLTextureLoader.cpp
+    Renderer/src/OpenGL/OpenGLTexture.cpp
     Renderer/src/OpenGL/OpenGLRenderer.cpp
     Renderer/src/OpenGL/OpenGLShader.cpp
     Renderer/src/OpenGL/OpenGLShaderLoader.cpp
@@ -37,6 +43,7 @@ target_include_directories(PrimitiveEngine
         ${CMAKE_CURRENT_SOURCE_DIR}/Resources/include
         ${CMAKE_CURRENT_SOURCE_DIR}/Renderer/include
         ${CMAKE_CURRENT_SOURCE_DIR}/Scene/include
+        ${stb_SOURCE_DIR}
 )
 
 target_compile_features(
@@ -51,4 +58,5 @@ target_link_libraries(
         SDL3::SDL3   
         glad_gl_core_46
         glm::glm
+        assimp::assimp
 )

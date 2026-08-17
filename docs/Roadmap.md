@@ -48,4 +48,10 @@ v.02
 | Renderer → Engine      | ✅      |
 | Clear / primeiro frame | ✅      |
 | Shader                 | ✅      |
-| Camera                 | ⏳      |
+| Camera                 | ✅      |
+| Material               | ✅      |
+| Texture                | ✅      |
+| Mesh                   | ✅      |
+| Model                  | ✅      |
+
+v.03

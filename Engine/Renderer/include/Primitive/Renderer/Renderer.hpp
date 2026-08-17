@@ -14,6 +14,8 @@ namespace primitive
     class IndexBuffer;
     class Mesh;
     class VertexBufferLayout;
+    class Model;
+    class Material;
 
     enum class RendererBackend;
 
@@ -37,6 +39,8 @@ namespace primitive
         void Clear(float r, float g, float b, float a);
         void Draw(std::uint32_t vertexCount);
         void DrawIndexed(const IndexBuffer &indexBuffer);
+        void DrawMesh(const Mesh& mesh);
+        void DrawModel(const Model& model, const Material& material);
 
         std::unique_ptr<VertexBuffer>
         CreateVertexBuffer(
