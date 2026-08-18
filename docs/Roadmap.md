@@ -55,3 +55,18 @@ v.02
 | Model                  | ✅      |
 
 v.03
+
+Milestone 3 — Scene / ECS
+
+1. Entity ID
+2. Component base / storage
+3. EntityManager
+4. ComponentManager
+5. Entity facade
+6. Scene
+7. TransformComponent
+8. ModelRendererComponent
+9. CameraComponent
+10. Scene Update
+11. Scene Render
+12. remover m_test* do Engine
