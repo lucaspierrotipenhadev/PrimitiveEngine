@@ -4,18 +4,19 @@
 
 #include "Primitive/Renderer/Shader.hpp"
 #include "Primitive/Renderer/Texture.hpp"
-#include "Primitive/Renderer/VertexBuffer.hpp"
-#include "Primitive/Renderer/VertexArray.hpp"
-#include "Primitive/Renderer/VertexBufferLayout.hpp"
-#include "Primitive/Renderer/IndexBuffer.hpp"
-
-#include "Primitive/Renderer/Model.hpp"
-#include "Primitive/Resources/ModelLoader.hpp"
+#include "Primitive/Renderer/Camera.hpp"
 #include "Primitive/Renderer/Material.hpp"
+#include "Primitive/Renderer/Model.hpp"
+
+#include "Primitive/Scene/Scene.hpp"
+#include "Primitive/Scene/Components/TransformComponent.hpp"
+#include "Primitive/Scene/Components/ModelRendererComponent.hpp"
+#include "Primitive/Scene/Components/CameraComponent.hpp"
+
+#include "Primitive/Resources/ModelLoader.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 #include <stdexcept>
 
@@ -49,8 +50,7 @@ namespace primitive
 
         m_running = true;
 
-        m_logger.Info(
-            "[Engine] Starting main loop...");
+        m_logger.Info("[Engine] Starting main loop...");
 
         while (m_running)
         {
@@ -84,116 +84,110 @@ namespace primitive
                 Stop();
             });
 
-        // Renderer escolhe e inicializa
-        // o backend através da factory.
         m_renderer.Initialize(
             m_configuration.renderer.backend,
             m_resourceManager);
 
         m_renderer.DepthTest(true);
 
-        // Engine conhece somente Shader.
-        m_testShader =
-            m_resourceManager.Load<Shader>(
-                "Assets/Shaders/basic.glsl");
-
-        m_testTexture =
-            m_resourceManager.Load<Texture>(
-                "Assets/Textures/checker.png");
-
-        if (!m_testTexture)
-        {
-            throw std::runtime_error(
-                "Failed to load texture.");
-        }
-
         m_resourceManager.RegisterLoader<Model>(
             std::make_shared<ModelLoader>(
                 m_renderer));
 
-        m_testModel =
-            m_resourceManager.Load<Model>(
-                "Assets/Models/cube.obj");
+        // -----------------------------------------
+        // Scene
+        // -----------------------------------------
 
-        m_testMaterial =
-            std::make_unique<Material>(
-                m_testShader);
+        m_activeScene = std::make_unique<Scene>();
 
-        m_testMaterial->SetBaseColor(
-            glm::vec4{
-                1.0f,
-                1.0f,
-                1.0f,
-                1.0f});
+        //------------------------------------------
+        // Assets
+        //------------------------------------------
 
-        m_testMaterial->SetAlbedoTexture(
-            m_testTexture);
+        auto shader = m_resourceManager.Load<Shader>("Assets/Shaders/basic.glsl");
 
-        if (!m_testShader)
+        if (!shader)
         {
             throw std::runtime_error(
                 "Failed to load shader.");
         }
 
+        auto texture = m_resourceManager.Load<Texture>("Assets/Textures/checker.png");
+
+        if (!texture)
+        {
+            throw std::runtime_error(
+                "Failed to load texture.");
+        }
+
+        auto model =m_resourceManager.Load<Model>("Assets/Models/cube.obj");
+
+        if (!model)
+        {
+            throw std::runtime_error(
+                "Failed to load model.");
+        }
+
+        auto material =
+            std::make_shared<Material>(
+                shader);
+
+        material->SetBaseColor(
+            glm::vec4{
+                1.0f,
+                1.0f,
+                1.0f,
+                1.0f});
+        material->SetAlbedoTexture(texture);
+
+        // -----------------------------------------
+        // Camera Entity
+        // -----------------------------------------
+
+        auto cameraEntity = m_activeScene->CreateEntity();
+        auto &cameraTransform = cameraEntity.AddComponent<TransformComponent>();
+
+        cameraTransform.transform.SetPosition(
+            glm::vec3{
+                0.0f,
+                0.0f,
+                0.0f});
+
         const float aspectRatio =
             static_cast<float>(m_window.GetWidth()) /
             static_cast<float>(m_window.GetHeight());
 
-        m_testCamera.SetProjection(
+        Camera camera;
+
+        camera.SetProjection(
             glm::perspective(
                 glm::radians(45.0f),
                 aspectRatio,
                 0.1f,
                 100.0f));
 
-        m_testCamera
-            .GetTransform()
-            .SetPosition(
-                glm::vec3{
-                    0.25f,
-                    0.0f,
-                    0.0f});
+        cameraEntity.AddComponent<CameraComponent>(std::move(camera), true);
 
-        m_testTransform.SetPosition(
-            glm::vec3(
-                0.25f,
-                0.0f,
-                -10.0f));
+        // -----------------------------------------
+        // Cube Entity
+        // -----------------------------------------
+        auto cubeEntity = m_activeScene->CreateEntity();
+        auto &transform = cubeEntity.AddComponent<TransformComponent>();
 
-        m_testTransform.SetRotation(
-            glm::vec3(
-                0.0f,
-                0.0f,
-                30.0f));
+        transform.transform.SetPosition(glm::vec3{0.25f, 0.0f, -10.0f});
+        cubeEntity.AddComponent<ModelRendererComponent>(model, material);
 
-        m_testTransform.SetScale(
-            glm::vec3(
-                0.75f,
-                0.75f,
-                1.0f));
-
-        m_logger.Info(
-            "[Engine] Triangle pipeline initialized.");
-
-        m_logger.Info(
-            "[Engine] Initialized.");
+        m_logger.Info("[Engine] Scene initialized.");
+        m_logger.Info("[Engine] Initialized.");
     }
 
     void Engine::Shutdown()
     {
-        m_testShader.reset();
-        m_testModel.reset();
-        m_testMaterial.reset();
-
-        // Libera recursos gráficos
-        // enquanto o backend/contexto
-        // ainda estão disponíveis.
+        m_activeScene.reset();
         m_resourceManager.Clear();
-
         m_renderer.Shutdown();
 
-        m_logger.Info(
-            "[Engine] Shutting down...");
+        m_logger.Info("[Engine] Shutting down...");
     }
 
     void Engine::ProcessEvents()
@@ -203,12 +197,10 @@ namespace primitive
 
     void Engine::Update(float deltaTime)
     {
-        (void)deltaTime;
-        m_testTransform.Rotate(
-            glm::vec3{
-                25.0f * deltaTime,
-                40.0f * deltaTime,
-                15.0f * deltaTime});
+        if (m_activeScene)
+        {
+            m_activeScene->Update(deltaTime);
+        }
     }
 
     void Engine::Render()
@@ -221,33 +213,9 @@ namespace primitive
             0.15f,
             1.0f);
 
-        if (m_testShader)
+        if (m_activeScene)
         {
-            m_testShader->Bind();
-
-            const glm::mat4 model =
-                m_testTransform.GetMatrix();
-
-            m_testShader->SetMat4(
-                "u_View",
-                glm::value_ptr(
-                    m_testCamera.GetView()));
-
-            m_testShader->SetMat4(
-                "u_Projection",
-                glm::value_ptr(
-                    m_testCamera.GetProjection()));
-
-            m_testShader->SetMat4(
-                "u_Model",
-                glm::value_ptr(model));
-
-            m_testShader->SetFloat3("u_LightDirection", -1.0f, -1.0f, -1.0f);
-            m_testShader->SetFloat3("u_LightColor", 1.0f, 1.0f, 1.0f);
-
-            m_renderer.DrawModel(*m_testModel, *m_testMaterial);
-
-            m_testShader->Unbind();
+            m_activeScene->Render(m_renderer);
         }
 
         m_renderer.EndFrame();

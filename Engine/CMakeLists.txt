@@ -55,6 +55,10 @@ target_compile_features(
         cxx_std_23
 )
 
+target_compile_options(PrimitiveEngine PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/permissive->
+)
+
 target_link_libraries(
     PrimitiveEngine
     PUBLIC

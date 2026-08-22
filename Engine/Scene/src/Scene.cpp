@@ -1,6 +1,19 @@
 #include "Primitive/Scene/Scene.hpp"
 
 #include <stdexcept>
+#include <functional>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include "Primitive/Scene/Components/TransformComponent.hpp"
+#include "Primitive/Scene/Components/ModelRendererComponent.hpp"
+#include "Primitive/Scene/Components/CameraComponent.hpp"
+
+#include "Primitive/Renderer/Renderer.hpp"
+#include "Primitive/Renderer/Shader.hpp"
+#include "Primitive/Renderer/Material.hpp"
+#include "Primitive/Renderer/Model.hpp"
 
 namespace primitive
 {
@@ -65,5 +78,64 @@ namespace primitive
                 "Entity is not alive."
             );
         }
+    }
+
+    void Scene::Update(float deltaTime)
+    {
+        (void)deltaTime;
+    }
+
+    void Scene::Render(Renderer& renderer)
+    {
+        glm::mat4 view{1.0f};
+        glm::mat4 projection{1.0f};
+
+        bool hasPrimaryCamera = false;
+
+        ForEach<TransformComponent, CameraComponent>(
+            [&](
+                EntityID,
+                TransformComponent& transform,
+                CameraComponent& camera)
+            {
+                if(hasPrimaryCamera || !camera.primary){return;}
+
+                view = glm::inverse(transform.transform.GetMatrix());
+
+                projection = camera.camera.GetProjection();
+
+                hasPrimaryCamera = true;
+            }
+        );
+
+        if(!hasPrimaryCamera) {return;}
+
+        ForEach<TransformComponent, ModelRendererComponent>(
+            [&](
+                EntityID,
+                TransformComponent& transform,
+                ModelRendererComponent& modelRenderer)
+            {
+                if(!modelRenderer.model || !modelRenderer.material)
+                {
+                    return;
+                }
+
+                const glm::mat4 model = transform.transform.GetMatrix();
+                const auto& shader = modelRenderer.material->GetShader();
+
+                if(!shader) { return;}
+
+                shader->Bind();
+
+                shader->SetMat4("u_Model", glm::value_ptr(model));
+                shader->SetMat4("u_View", glm::value_ptr(view));
+                shader->SetMat4("u_Projection", glm::value_ptr(projection));
+                shader->SetFloat3("u_LightDirection", -1.0f, -1.0f, -1.0f);
+                shader->SetFloat3("u_LightColor", 1.0f, 1.0f, 1.0f);
+
+                renderer.DrawModel(*modelRenderer.model, *modelRenderer.material);
+            }
+        );
     }
 }

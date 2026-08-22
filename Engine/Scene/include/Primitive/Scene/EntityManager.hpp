@@ -27,6 +27,17 @@ namespace primitive
         [[nodiscard]]
         std::size_t GetAliveCount() const;
 
+        template<typename Func>
+        void ForEach(Func&& function) const
+        {
+            for (const EntityID entity : m_aliveEntities)
+            {
+                std::forward<Func>(function)(
+                    entity
+                );
+            }
+        }
+
         void Clear();
 
     private:
