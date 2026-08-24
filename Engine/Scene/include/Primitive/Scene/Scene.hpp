@@ -2,14 +2,20 @@
 
 #include <utility>
 #include <functional>
+#include <cstdint>
 
 #include "Primitive/Scene/ComponentManager.hpp"
 #include "Primitive/Scene/Entity.hpp"
 #include "Primitive/Scene/EntityManager.hpp"
 
+#include "Primitive/Physics/PhysicsWorld.hpp"
+#include "Primitive/Physics/FixedTimeStep.hpp"
+
 namespace primitive
 {
     class Renderer;
+    class EventBus;
+
     class Scene
     {
     public:
@@ -112,8 +118,20 @@ namespace primitive
                 });
         }
 
-        void Update(float deltaTime);
+        void Update(float deltaTime, EventBus& eventBus);
         void Render(Renderer& renderer);
+
+        void SetFixedTimeStep(float fixedTimeStep);
+        void AdvancePhysics(float deltaTime, EventBus& eventBus);
+
+        [[nodiscard]]
+        float GetFixedTimeStep() const;
+
+        [[nodiscard]]
+        PhysicsWorld& GetPhysicsWorld();
+
+        [[nodiscard]]
+        const PhysicsWorld& GetPhysicsWorld() const;
 
     private:
         void ValidateEntity(
@@ -150,6 +168,10 @@ namespace primitive
     private:
         EntityManager m_entityManager;
         ComponentManager m_componentManager;
+        PhysicsWorld m_physicsWorld;
+        FixedTimeStep m_physicsTimeStep;
+
+        std::uint32_t m_maxPhysicsStepsPerFrame{8};
     };
 }
 

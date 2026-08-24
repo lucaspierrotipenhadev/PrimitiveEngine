@@ -12,8 +12,12 @@
 #include "Primitive/Scene/Components/TransformComponent.hpp"
 #include "Primitive/Scene/Components/ModelRendererComponent.hpp"
 #include "Primitive/Scene/Components/CameraComponent.hpp"
+#include "Primitive/Scene/Components/RigidBodyComponent.hpp"
+#include "Primitive/Scene/Components/BoxColliderComponent.hpp"
 
 #include "Primitive/Resources/ModelLoader.hpp"
+
+#include "Primitive/Physics/PhysicsEvents.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -99,6 +103,7 @@ namespace primitive
         // -----------------------------------------
 
         m_activeScene = std::make_unique<Scene>();
+        m_activeScene->SetFixedTimeStep(m_configuration.physics.fixedTimeStep);
 
         //------------------------------------------
         // Assets
@@ -120,7 +125,7 @@ namespace primitive
                 "Failed to load texture.");
         }
 
-        auto model =m_resourceManager.Load<Model>("Assets/Models/cube.obj");
+        auto model = m_resourceManager.Load<Model>("Assets/Models/cube.obj");
 
         if (!model)
         {
@@ -150,7 +155,7 @@ namespace primitive
         cameraTransform.transform.SetPosition(
             glm::vec3{
                 0.0f,
-                0.0f,
+                2.0f,
                 0.0f});
 
         const float aspectRatio =
@@ -174,11 +179,44 @@ namespace primitive
         auto cubeEntity = m_activeScene->CreateEntity();
         auto &transform = cubeEntity.AddComponent<TransformComponent>();
 
-        transform.transform.SetPosition(glm::vec3{0.25f, 0.0f, -10.0f});
+        transform.transform.SetPosition(glm::vec3{0.0f, 5.0f, -10.0f});
         cubeEntity.AddComponent<ModelRendererComponent>(model, material);
+
+        auto &cubeRigidiBody = cubeEntity.AddComponent<RigidBodyComponent>();
+        cubeRigidiBody.type = RigidBodyType::Dynamic;
+        cubeRigidiBody.mass = 1.0f;
+        cubeRigidiBody.useGravity = true;
+        cubeRigidiBody.velocity = glm::vec3{0.0f};
+
+        auto &cubeCollider = cubeEntity.AddComponent<BoxColliderComponent>();
+        cubeCollider.halfExtends = glm::vec3{0.5f, 0.5f, 0.5f};
+        cubeCollider.collider.restitution = 0.0f;
+        cubeCollider.collider.friction = 0.0f;
+
+        auto groundEntity = m_activeScene->CreateEntity();
+
+        auto &groundTransform = groundEntity.AddComponent<TransformComponent>();
+        groundTransform.transform.SetPosition(glm::vec3{0.0f, -1.0f, -10.0f});
+        groundTransform.transform.SetScale(glm::vec3{6.0f, 0.5f, 6.0f});
+
+        groundEntity.AddComponent<ModelRendererComponent>(model, material);
+
+        auto &groundCollider = groundEntity.AddComponent<BoxColliderComponent>();
+        groundCollider.halfExtends = glm::vec3{0.5f, 0.5f, 0.5f};
+        groundCollider.collider.restitution = 0.0f;
+        groundCollider.collider.friction = 0.0f;
 
         m_logger.Info("[Engine] Scene initialized.");
         m_logger.Info("[Engine] Initialized.");
+
+        m_eventBus.Subscribe<
+            CollisionEnterEvent>(
+            [this](
+                const CollisionEnterEvent &)
+            {
+                m_logger.Info(
+                    "[Physics] Collision Enter.");
+            });
     }
 
     void Engine::Shutdown()
@@ -199,7 +237,7 @@ namespace primitive
     {
         if (m_activeScene)
         {
-            m_activeScene->Update(deltaTime);
+            m_activeScene->Update(deltaTime, m_eventBus);
         }
     }
 

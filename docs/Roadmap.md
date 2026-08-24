@@ -11,48 +11,43 @@
 | v1.0   | Pequeno jogo de demonstração               |
 
 
-v0.1 — Foundation
+Milestone 1 Engine e Resource
 
-| Componente                  | Estado |
-| --------------------------- | ------ |
-| Core / Application / Engine | ✅      |
-| Logger                      | ✅      |
-| Time                        | ✅      |
-| Window                      | ✅      |
-| Platform                    | ✅      |
-| SDL3                        | ✅      |
-| Input                       | ✅      |
-| SDLInput                    | ✅      |
-| EventBus                    | ✅      |
-| Resource                    | ✅      |
-| ResourceManager             | ✅      |
-| FileSystem                  | ✅      |
-| IResourceLoader             | ✅      |
-| LoaderRegistry              | ✅      |
-| Configuration               | ✅      |
-| Configuration → Window      | ✅      |
-| Configuration → Engine      | ✅      |
-| Core Integration Test       | ✅      |
+1. Core / Application / Engine 
+2. Logger                      
+3. Time                        
+4. Window                      
+5. Platform                    
+6. SDL3                        
+7. Input                       
+8. SDLInput                    
+9. EventBus                    
+10. Resource                   
+11. ResourceManager            
+12. FileSystem                 
+13. IResourceLoader            
+14. LoaderRegistry             
+15. Configuration              
+16. Configuration → Window     
+17. Configuration → Engine     
+18. Core Integration Test      
 
-
-v.02
-| Componente             | Estado |
-| ---------------------- | ------ |
-| Renderer               | ✅      |
-| IRendererAPI           | ✅      |
-| TestRendererAPI        | ✅      |
-| OpenGLRenderer         | ✅      |
-| OpenGL Context         | ✅      |
-| GLAD 2                 | ✅      |
-| OpenGL 4.6 Core        | ✅      |
-| Renderer → Engine      | ✅      |
-| Clear / primeiro frame | ✅      |
-| Shader                 | ✅      |
-| Camera                 | ✅      |
-| Material               | ✅      |
-| Texture                | ✅      |
-| Mesh                   | ✅      |
-| Model                  | ✅      |
+Milestone 2 - Renderer e camera
+1. Renderer               
+2. IRendererAPI           
+3. TestRendererAPI        
+4. OpenGLRenderer         
+5. OpenGL Context        
+6. GLAD 2                 
+7. OpenGL 4.6 Core        
+8. Renderer → Engine      
+9. Clear / primeiro frame 
+10. Shader                 
+11. Camera                 
+12. Material               
+13. Texture                
+14. Mesh                   
+15. Model                  
 
 v.03
 
@@ -70,3 +65,48 @@ Milestone 3 — Scene / ECS
 10. Scene Update
 11. Scene Render
 12. remover m_test* do Engine
+
+Milestone 4 — Physics
+
+1. Physics module / arquitetura
+2. RigidbodyComponent
+3. Collider base
+4. BoxColliderComponent
+5. SphereColliderComponent
+6. PhysicsWorld
+7. integração Scene → PhysicsWorld
+8. integração Transform ↔ Rigidbody
+9. AABB / bounding volumes
+10. Broad Phase
+11. Narrow Phase
+12. Collision detection
+13. Collision events
+14. Collision response simples
+15. Fixed timestep
+16. Scene Update + Physics
+17. teste visual com entidades
+
+Milestone 5 — Editor
+
+1. Editor module / arquitetura
+2. ImGui integration
+3. Editor application
+4. Dockspace principal
+5. Hierarchy panel
+6. Entity selection
+7. Inspector panel
+8. edição de TransformComponent
+9. edição de CameraComponent
+10. edição de ModelRendererComponent
+11. edição de RigidbodyComponent
+12. edição de Box/Sphere Collider
+13. Scene viewport
+14. render target / framebuffer
+15. viewport resize
+16. gizmos de Transform
+17. criação e remoção de entidades
+18. adicionar/remover componentes
+19. Play / Stop mode
+20. cena de edição vs cena em runtime
+21. salvar/carregar Scene
+22. primeiro fluxo completo no Editor

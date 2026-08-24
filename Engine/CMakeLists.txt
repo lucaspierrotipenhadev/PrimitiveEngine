@@ -37,6 +37,13 @@ add_library(PrimitiveEngine STATIC
     Scene/src/Entity.cpp
     Scene/src/EntityManager.cpp
     Scene/src/Transform.cpp
+
+    Physics/src/PhysicsWorld.cpp
+    Physics/src/Bounds.cpp
+    Physics/src/NarrowPhase.cpp
+    Physics/src/BroadPhase.cpp
+    Physics/src/AABB.cpp
+    Physics/src/FixedTimeStep.cpp
 )
 
 target_include_directories(PrimitiveEngine
@@ -46,6 +53,7 @@ target_include_directories(PrimitiveEngine
         ${CMAKE_CURRENT_SOURCE_DIR}/Resources/include
         ${CMAKE_CURRENT_SOURCE_DIR}/Renderer/include
         ${CMAKE_CURRENT_SOURCE_DIR}/Scene/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/Physics/include
         ${stb_SOURCE_DIR}
 )
 

@@ -6,6 +6,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Primitive/Core/EventBus.hpp"
+
 #include "Primitive/Scene/Components/TransformComponent.hpp"
 #include "Primitive/Scene/Components/ModelRendererComponent.hpp"
 #include "Primitive/Scene/Components/CameraComponent.hpp"
@@ -24,8 +26,7 @@ namespace primitive
 
         return Entity{
             id,
-            this
-        };
+            this};
     }
 
     void Scene::DestroyEntity(
@@ -45,8 +46,7 @@ namespace primitive
         EntityID entity) const
     {
         return m_entityManager.IsAlive(
-            entity
-        );
+            entity);
     }
 
     std::size_t
@@ -58,6 +58,8 @@ namespace primitive
 
     void Scene::Clear()
     {
+        m_physicsWorld.Clear();
+        m_physicsTimeStep.Reset();
         m_componentManager.Clear();
         m_entityManager.Clear();
     }
@@ -68,24 +70,22 @@ namespace primitive
         if (entity == NullEntity)
         {
             throw std::runtime_error(
-                "Invalid entity."
-            );
+                "Invalid entity.");
         }
 
         if (!m_entityManager.IsAlive(entity))
         {
             throw std::runtime_error(
-                "Entity is not alive."
-            );
+                "Entity is not alive.");
         }
     }
 
-    void Scene::Update(float deltaTime)
+    void Scene::Update(float deltaTime, EventBus& eventBus)
     {
-        (void)deltaTime;
+        AdvancePhysics(deltaTime, eventBus);
     }
 
-    void Scene::Render(Renderer& renderer)
+    void Scene::Render(Renderer &renderer)
     {
         glm::mat4 view{1.0f};
         glm::mat4 projection{1.0f};
@@ -95,36 +95,44 @@ namespace primitive
         ForEach<TransformComponent, CameraComponent>(
             [&](
                 EntityID,
-                TransformComponent& transform,
-                CameraComponent& camera)
+                TransformComponent &transform,
+                CameraComponent &camera)
             {
-                if(hasPrimaryCamera || !camera.primary){return;}
+                if (hasPrimaryCamera || !camera.primary)
+                {
+                    return;
+                }
 
                 view = glm::inverse(transform.transform.GetMatrix());
 
                 projection = camera.camera.GetProjection();
 
                 hasPrimaryCamera = true;
-            }
-        );
+            });
 
-        if(!hasPrimaryCamera) {return;}
+        if (!hasPrimaryCamera)
+        {
+            return;
+        }
 
         ForEach<TransformComponent, ModelRendererComponent>(
             [&](
                 EntityID,
-                TransformComponent& transform,
-                ModelRendererComponent& modelRenderer)
+                TransformComponent &transform,
+                ModelRendererComponent &modelRenderer)
             {
-                if(!modelRenderer.model || !modelRenderer.material)
+                if (!modelRenderer.model || !modelRenderer.material)
                 {
                     return;
                 }
 
                 const glm::mat4 model = transform.transform.GetMatrix();
-                const auto& shader = modelRenderer.material->GetShader();
+                const auto &shader = modelRenderer.material->GetShader();
 
-                if(!shader) { return;}
+                if (!shader)
+                {
+                    return;
+                }
 
                 shader->Bind();
 
@@ -135,7 +143,50 @@ namespace primitive
                 shader->SetFloat3("u_LightColor", 1.0f, 1.0f, 1.0f);
 
                 renderer.DrawModel(*modelRenderer.model, *modelRenderer.material);
-            }
-        );
+            });
+    }
+
+    PhysicsWorld &Scene::GetPhysicsWorld()
+    {
+        return m_physicsWorld;
+    }
+
+    const PhysicsWorld &Scene::GetPhysicsWorld() const
+    {
+        return m_physicsWorld;
+    }
+
+    void Scene::SetFixedTimeStep(float fixedTimeStep)
+    {
+        m_physicsTimeStep.SetStep(fixedTimeStep);
+    }
+
+    void Scene::AdvancePhysics(float deltaTime, EventBus& eventBus)
+    {
+        if(deltaTime <= 0) {return;}
+
+        m_physicsTimeStep.AddTime(deltaTime);
+
+        std::uint32_t stepCount = 0;
+
+        while(m_physicsTimeStep.CanStep() && stepCount < m_maxPhysicsStepsPerFrame)
+        {
+            const float fixedDeltaTime = m_physicsTimeStep.GetStep();
+            m_physicsWorld.Step(*this, fixedDeltaTime);
+            m_physicsWorld.PublishCollisionEvents(eventBus);
+            m_physicsTimeStep.ConsumeStep();
+            ++stepCount;
+        }
+
+        if(stepCount == m_maxPhysicsStepsPerFrame && m_physicsTimeStep.CanStep())
+        {
+            m_physicsTimeStep.Reset();
+        }
+
+    }
+
+    float Scene::GetFixedTimeStep() const
+    {
+        return m_physicsTimeStep.GetStep();
     }
 }
