@@ -11,6 +11,7 @@
 #include "Primitive/Scene/Components/TransformComponent.hpp"
 #include "Primitive/Scene/Components/ModelRendererComponent.hpp"
 #include "Primitive/Scene/Components/CameraComponent.hpp"
+#include "Primitive/Scene/Components/TagComponent.hpp"
 
 #include "Primitive/Renderer/Renderer.hpp"
 #include "Primitive/Renderer/Shader.hpp"
@@ -19,10 +20,16 @@
 
 namespace primitive
 {
-    Entity Scene::CreateEntity()
+    Entity Scene::CreateEntity(const std::string& name)
     {
         const EntityID id =
             m_entityManager.Create();
+
+        m_componentManager
+        .Add<TagComponent>(
+            id,
+            name
+        );
 
         return Entity{
             id,

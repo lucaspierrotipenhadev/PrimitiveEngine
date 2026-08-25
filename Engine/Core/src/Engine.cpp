@@ -23,6 +23,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <stdexcept>
+#include <utility>
 
 namespace primitive
 {
@@ -149,34 +150,29 @@ namespace primitive
         // Camera Entity
         // -----------------------------------------
 
-        auto cameraEntity = m_activeScene->CreateEntity();
+        auto cameraEntity = m_activeScene->CreateEntity("Camera");
         auto &cameraTransform = cameraEntity.AddComponent<TransformComponent>();
 
-        cameraTransform.transform.SetPosition(
-            glm::vec3{
-                0.0f,
-                2.0f,
-                0.0f});
+        cameraTransform.transform.SetPosition(glm::vec3{0.0f, 2.0f, 0.0f});
 
         const float aspectRatio =
             static_cast<float>(m_window.GetWidth()) /
             static_cast<float>(m_window.GetHeight());
 
-        Camera camera;
 
-        camera.SetProjection(
-            glm::perspective(
-                glm::radians(45.0f),
-                aspectRatio,
-                0.1f,
-                100.0f));
+        cameraEntity.AddComponent<CameraComponent>();
 
-        cameraEntity.AddComponent<CameraComponent>(std::move(camera), true);
+        cameraEntity.GetComponent<CameraComponent>().projectionType = CameraProjectionType::Perspective;
+        cameraEntity.GetComponent<CameraComponent>().perspectiveFov = 45.0f;
+        cameraEntity.GetComponent<CameraComponent>().perspectiveNear = 0.1f;
+        cameraEntity.GetComponent<CameraComponent>().perspectiveFar = 100.0f;
+        cameraEntity.GetComponent<CameraComponent>().primary = true;
+        cameraEntity.GetComponent<CameraComponent>().UppdateProjection(aspectRatio);
 
         // -----------------------------------------
         // Cube Entity
         // -----------------------------------------
-        auto cubeEntity = m_activeScene->CreateEntity();
+        auto cubeEntity = m_activeScene->CreateEntity("Cube");
         auto &transform = cubeEntity.AddComponent<TransformComponent>();
 
         transform.transform.SetPosition(glm::vec3{0.0f, 5.0f, -10.0f});
@@ -193,7 +189,7 @@ namespace primitive
         cubeCollider.collider.restitution = 0.0f;
         cubeCollider.collider.friction = 0.0f;
 
-        auto groundEntity = m_activeScene->CreateEntity();
+        auto groundEntity = m_activeScene->CreateEntity("Ground");
 
         auto &groundTransform = groundEntity.AddComponent<TransformComponent>();
         groundTransform.transform.SetPosition(glm::vec3{0.0f, -1.0f, -10.0f});
@@ -217,10 +213,21 @@ namespace primitive
                 m_logger.Info(
                     "[Physics] Collision Enter.");
             });
+
+        m_layerStack.OnAttach(*this);
+        m_sdlInput.SetNativeEventCallback(
+            [this](const void *event)
+            {
+                m_layerStack.OnNativeEvent(
+                    event);
+            });
     }
 
     void Engine::Shutdown()
     {
+        m_sdlInput.SetNativeEventCallback({});
+        m_layerStack.Clear();
+
         m_activeScene.reset();
         m_resourceManager.Clear();
         m_renderer.Shutdown();
@@ -239,6 +246,8 @@ namespace primitive
         {
             m_activeScene->Update(deltaTime, m_eventBus);
         }
+
+        m_layerStack.OnUpdate(deltaTime);
     }
 
     void Engine::Render()
@@ -256,6 +265,10 @@ namespace primitive
             m_activeScene->Render(m_renderer);
         }
 
+        m_layerStack.OnBeginFrame();
+        m_layerStack.OnRender();
+        m_layerStack.OnEndFrame();
+
         m_renderer.EndFrame();
 
         m_window.SwapBuffers();
@@ -264,5 +277,31 @@ namespace primitive
     Input &Engine::GetInput()
     {
         return m_input;
+    }
+
+    Window &Engine::GetWindow()
+    {
+        return m_window;
+    }
+
+    const Window &Engine::GetWindow() const
+    {
+        return m_window;
+    }
+
+    void Engine::PushLayer(std::unique_ptr<Layer> layer)
+    {
+        m_layerStack.PushLayer(std::move(layer));
+    }
+
+    Scene *Engine::GetActiveScene()
+    {
+        return m_activeScene.get();
+    }
+
+    const Scene *
+    Engine::GetActiveScene() const
+    {
+        return m_activeScene.get();
     }
 }

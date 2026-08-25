@@ -137,6 +137,11 @@ namespace primitive
 
         while (SDL_PollEvent(&event))
         {
+            if(m_nativeEventCallback)
+            {
+                m_nativeEventCallback(&event);
+            }
+
             switch (event.type)
             {
             case SDL_EVENT_QUIT:
@@ -206,5 +211,10 @@ namespace primitive
                 break;
             }
         }
+    }
+
+    void SDLInput::SetNativeEventCallback(NativeEventCallback callback)
+    {
+        m_nativeEventCallback = std::move(callback);
     }
 }

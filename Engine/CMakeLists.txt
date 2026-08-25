@@ -7,6 +7,7 @@ add_library(PrimitiveEngine STATIC
     Core/src/EventBus.cpp
     Core/src/Events/WindowEvents.cpp
     Core/src/Configuration.cpp
+    Core/src/LayerStack.cpp
 
     Platform/src/Platform.cpp
     Platform/src/Window.cpp

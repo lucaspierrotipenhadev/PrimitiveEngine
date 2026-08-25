@@ -1,6 +1,9 @@
 #pragma once
 
 #include "Primitive/Platform/Input.hpp"
+
+#include <functional>
+
 #include "Primitive/Core/EventBus.hpp"
 
 namespace primitive
@@ -8,6 +11,7 @@ namespace primitive
     class SDLInput
     {
     public:
+        using NativeEventCallback = std::function<void(const void*)>;
         explicit SDLInput(Input& input, EventBus& eventBus);
         ~SDLInput() = default;
 
@@ -16,8 +20,11 @@ namespace primitive
 
         void PollEvents();
 
+        void SetNativeEventCallback(NativeEventCallback callback);
+
     private:
         Input& m_input;
         EventBus& m_eventBus;
+        NativeEventCallback m_nativeEventCallback;
     };
 }

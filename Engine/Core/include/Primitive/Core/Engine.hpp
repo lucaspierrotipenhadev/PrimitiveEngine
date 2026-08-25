@@ -2,11 +2,14 @@
 
 #include <cstdint>
 #include <memory>
+#include <functional>
 
 #include "Primitive/Core/Time.hpp"
 #include "Primitive/Core/Logger.hpp"
 #include "Primitive/Core/EventBus.hpp"
 #include "Primitive/Core/Configuration.hpp"
+#include "Primitive/Core/Layer.hpp"
+#include "Primitive/Core/LayerStack.hpp"
 
 #include "Primitive/Platform/Window.hpp"
 #include "Primitive/Platform/Platform.hpp"
@@ -23,6 +26,9 @@ namespace primitive
     class Engine
     {
     public:
+        using NativeEventCallback = std::function<void(const void *)>;
+        using FrameCallback = std::function<void()>;
+
         Engine();
         ~Engine();
 
@@ -30,6 +36,23 @@ namespace primitive
         void Stop();
 
         Input &GetInput();
+
+        [[nodiscard]]
+        Window &GetWindow();
+
+        [[nodiscard]]
+        const Window &GetWindow() const;
+
+        [[nodiscard]]
+        Scene *GetActiveScene();
+
+        [[nodiscard]]
+        const Scene *GetActiveScene() const;
+
+        void SetNativeEventCallback(NativeEventCallback callback);
+        void SetGuiBeginCallback(FrameCallback callback);
+        void SetGuiRenderCallback(FrameCallback callback);
+        void PushLayer(std::unique_ptr<Layer> layer);
 
     private:
         void Initialize();
@@ -52,6 +75,7 @@ namespace primitive
         Window m_window;
         Renderer m_renderer;
         ResourceManager m_resourceManager;
+        LayerStack m_layerStack;
 
         std::unique_ptr<Scene> m_activeScene;
     };

@@ -21,6 +21,12 @@ namespace primitive
         int GetWidth() const;
         int GetHeight() const;
 
+        [[nodiscard]]
+        void* GetNativeHandle() const;
+
+        [[nodiscard]]
+        void* GetGraphicsContext() const;
+
     private:
         struct WindowData;
 

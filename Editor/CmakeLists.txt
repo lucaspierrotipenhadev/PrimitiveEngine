@@ -1,0 +1,28 @@
+add_executable(
+    PrimitiveEditor
+
+    src/main.cpp
+    
+    ImGuiPrimitive/src/EditorApplication.cpp
+    ImGuiPrimitive/src/ImGuiLayer.cpp
+    ImGuiPrimitive/src/EditorLayer.cpp
+
+    ImGuiPrimitive/src/Panels/HierarchyPanel.cpp
+    ImGuiPrimitive/src/Panels/InspectorPanel.cpp
+    ImGuiPrimitive/src/Panels/ViewportPanel.cpp
+)
+
+target_include_directories(
+    PrimitiveEditor
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/ImGuiPrimitive/include
+)
+
+target_link_libraries(
+    PrimitiveEditor
+    PRIVATE
+        PrimitiveEngine
+        PrimitiveImGui
+        SDL3::SDL3
+)

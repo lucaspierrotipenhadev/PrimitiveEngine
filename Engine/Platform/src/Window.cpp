@@ -105,4 +105,14 @@ namespace primitive
     {
         return m_data->height;
     }
+
+    void* Window::GetNativeHandle() const
+    {
+        return m_data->handle;
+    }
+
+    void* Window::GetGraphicsContext() const
+    {
+        return m_data->context;
+    }
 }

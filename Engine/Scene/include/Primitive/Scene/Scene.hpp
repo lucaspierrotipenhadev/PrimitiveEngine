@@ -26,7 +26,7 @@ namespace primitive
         Scene &operator=(const Scene &) = delete;
 
         [[nodiscard]]
-        Entity CreateEntity();
+        Entity CreateEntity(const std::string &name = "Entity");
 
         void DestroyEntity(Entity entity);
 
@@ -118,20 +118,27 @@ namespace primitive
                 });
         }
 
-        void Update(float deltaTime, EventBus& eventBus);
-        void Render(Renderer& renderer);
+        template <typename Func>
+        void ForEachEntity(Func &&function)
+        {
+            m_entityManager.ForEach(
+                std::forward<Func>(function));
+        }
+
+        void Update(float deltaTime, EventBus &eventBus);
+        void Render(Renderer &renderer);
 
         void SetFixedTimeStep(float fixedTimeStep);
-        void AdvancePhysics(float deltaTime, EventBus& eventBus);
+        void AdvancePhysics(float deltaTime, EventBus &eventBus);
 
         [[nodiscard]]
         float GetFixedTimeStep() const;
 
         [[nodiscard]]
-        PhysicsWorld& GetPhysicsWorld();
+        PhysicsWorld &GetPhysicsWorld();
 
         [[nodiscard]]
-        const PhysicsWorld& GetPhysicsWorld() const;
+        const PhysicsWorld &GetPhysicsWorld() const;
 
     private:
         void ValidateEntity(
