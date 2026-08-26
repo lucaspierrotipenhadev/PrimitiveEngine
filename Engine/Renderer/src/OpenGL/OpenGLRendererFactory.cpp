@@ -6,6 +6,7 @@
 #include "Primitive/Renderer/OpenGL/OpenGLVertexBuffer.hpp"
 #include "Primitive/Renderer/OpenGL/OpenGLVertexArray.hpp"
 #include "Primitive/Renderer/OpenGL/OpenGLIndexBuffer.hpp"
+#include "Primitive/Renderer/OpenGL/OpenGLFramebuffer.hpp"
 
 namespace primitive
 {
@@ -52,5 +53,14 @@ namespace primitive
     {
         return std::make_shared<
             OpenGLTextureLoader>();
+    }
+
+    std::unique_ptr<Framebuffer>
+    OpenGLRendererFactory::CreateFramebuffer(
+        const FramebufferSpecification& specification)
+    {
+        return std::make_unique<
+            OpenGLFramebuffer>(
+                specification);
     }
 }

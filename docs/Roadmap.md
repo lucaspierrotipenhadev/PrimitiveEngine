@@ -100,10 +100,10 @@ Milestone 5 — Editor
 10. edição de ModelRendererComponent
 11. edição de RigidbodyComponent
 12. edição de Box/Sphere Collider
-13. Scene viewport <----------------------------- Parado aqui
+13. Scene viewport 
 14. render target / framebuffer
 15. viewport resize
-16. gizmos de Transform
+16. gizmos de Transform <----------------------------- Parado aqui
 17. criação e remoção de entidades
 18. adicionar/remover componentes
 19. Play / Stop mode

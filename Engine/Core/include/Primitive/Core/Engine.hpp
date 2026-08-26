@@ -49,6 +49,18 @@ namespace primitive
         [[nodiscard]]
         const Scene *GetActiveScene() const;
 
+        [[nodiscard]]
+        Renderer &GetRenderer();
+
+        [[nodiscard]]
+        const Renderer &GetRenderer() const;
+
+        void SetRenderActiveScene(
+            bool enabled);
+
+        [[nodiscard]]
+        bool GetRenderActiveScene() const;
+
         void SetNativeEventCallback(NativeEventCallback callback);
         void SetGuiBeginCallback(FrameCallback callback);
         void SetGuiRenderCallback(FrameCallback callback);
@@ -64,6 +76,7 @@ namespace primitive
 
     private:
         bool m_running{false};
+        bool m_renderActiveScene{true};
 
         Configuration m_configuration;
         Platform m_platform;

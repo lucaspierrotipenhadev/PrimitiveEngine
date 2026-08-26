@@ -159,7 +159,6 @@ namespace primitive
             static_cast<float>(m_window.GetWidth()) /
             static_cast<float>(m_window.GetHeight());
 
-
         cameraEntity.AddComponent<CameraComponent>();
 
         cameraEntity.GetComponent<CameraComponent>().projectionType = CameraProjectionType::Perspective;
@@ -260,7 +259,7 @@ namespace primitive
             0.15f,
             1.0f);
 
-        if (m_activeScene)
+        if (m_activeScene && m_renderActiveScene)
         {
             m_activeScene->Render(m_renderer);
         }
@@ -303,5 +302,27 @@ namespace primitive
     Engine::GetActiveScene() const
     {
         return m_activeScene.get();
+    }
+
+    Renderer &Engine::GetRenderer()
+    {
+        return m_renderer;
+    }
+
+    const Renderer &Engine::GetRenderer() const
+    {
+        return m_renderer;
+    }
+
+    void Engine::SetRenderActiveScene(
+        bool enabled)
+    {
+        m_renderActiveScene =
+            enabled;
+    }
+
+    bool Engine::GetRenderActiveScene() const
+    {
+        return m_renderActiveScene;
     }
 }

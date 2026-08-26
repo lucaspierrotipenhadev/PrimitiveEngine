@@ -12,6 +12,8 @@ namespace primitive
     class VertexArray;
     class IndexBuffer;
     class Texture;
+    class Framebuffer;
+    struct FramebufferSpecification;
 
     class IRendererFactory
     {
@@ -49,5 +51,10 @@ namespace primitive
 
         virtual std::shared_ptr<IResourceLoader>
         CreateTextureLoader() = 0;
+
+        virtual std::unique_ptr<Framebuffer>
+        CreateFramebuffer(
+                const FramebufferSpecification& specification
+        ) = 0;
     };
 }

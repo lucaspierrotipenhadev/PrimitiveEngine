@@ -33,6 +33,7 @@ add_library(PrimitiveEngine STATIC
     Renderer/src/OpenGL/OpenGLVertexArray.cpp
     Renderer/src/OpenGL/OpenGLRendererFactory.cpp
     Renderer/src/OpenGL/OpenGLIndexBuffer.cpp
+    Renderer/src/OpenGL/OpenGLFrameBuffer.cpp
 
     Scene/src/Scene.cpp
     Scene/src/Entity.cpp

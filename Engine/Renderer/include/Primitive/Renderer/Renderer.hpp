@@ -16,6 +16,8 @@ namespace primitive
     class VertexBufferLayout;
     class Model;
     class Material;
+    struct FramebufferSpecification;
+    class Framebuffer;
 
     enum class RendererBackend;
 
@@ -39,8 +41,8 @@ namespace primitive
         void Clear(float r, float g, float b, float a);
         void Draw(std::uint32_t vertexCount);
         void DrawIndexed(const IndexBuffer &indexBuffer);
-        void DrawMesh(const Mesh& mesh);
-        void DrawModel(const Model& model, const Material& material);
+        void DrawMesh(const Mesh &mesh);
+        void DrawModel(const Model &model, const Material &material);
 
         std::unique_ptr<VertexBuffer>
         CreateVertexBuffer(
@@ -62,6 +64,13 @@ namespace primitive
             const VertexBufferLayout &layout,
             const std::uint32_t *indices,
             std::uint32_t indexCount);
+
+        [[nodiscard]]
+        std::unique_ptr<Framebuffer>
+        CreateFramebuffer(
+            const FramebufferSpecification &specification);
+
+        void SetViewport( std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height);
 
     private:
         std::unique_ptr<IRendererAPI> m_api;

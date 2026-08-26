@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "Primitive/Core/Layer.hpp"
 
 #include "Primitive/ImGuiPrimitive/Panels/HierarchyPanel.hpp"
@@ -11,6 +13,7 @@
 namespace primitive
 {
     class Engine;
+    class Framebuffer;
 
     class EditorLayer final : public Layer
     {
@@ -42,5 +45,6 @@ namespace primitive
         InspectorPanel m_inspectorPanel;
         ViewportPanel m_viewportPanel;
         Entity m_selectedEntity;
+        std::unique_ptr<Framebuffer> m_sceneFramebuffer;
     };
 }

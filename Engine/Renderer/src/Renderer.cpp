@@ -22,6 +22,7 @@
 
 #include "Primitive/Renderer/OpenGL/OpenGLRendererFactory.hpp"
 #include "Primitive/Renderer/OpenGL/OpenGLIndexBuffer.hpp"
+#include "Primitive/Renderer/OpenGL/OpenGLFramebuffer.hpp"
 
 namespace primitive
 {
@@ -193,7 +194,7 @@ namespace primitive
                 "u_HasAlbedoTexture",
                 0);
         }
-        
+
         for (const auto &mesh :
              model.GetMeshes())
         {
@@ -280,5 +281,26 @@ namespace primitive
             std::move(vertexArray),
             std::move(vertexBuffer),
             std::move(indexBuffer));
+    }
+
+    std::unique_ptr<Framebuffer>
+    Renderer::CreateFramebuffer(
+        const FramebufferSpecification &specification)
+    {
+        return m_factory->CreateFramebuffer(
+            specification);
+    }
+
+    void Renderer::SetViewport(
+        std::uint32_t x,
+        std::uint32_t y,
+        std::uint32_t width,
+        std::uint32_t height)
+    {
+        m_api->SetViewport(
+            x,
+            y,
+            width,
+            height);
     }
 }

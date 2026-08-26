@@ -9,7 +9,7 @@ namespace primitive
     public:
         virtual ~Layer() = default;
 
-        virtual void OnAttach(Engine&)
+        virtual void OnAttach(Engine &)
         {
         }
 
@@ -17,7 +17,7 @@ namespace primitive
         {
         }
 
-        virtual void OnNativeEvent(const void*)
+        virtual void OnNativeEvent(const void *)
         {
         }
 
@@ -34,6 +34,10 @@ namespace primitive
         }
 
         virtual void OnEndFrame()
+        {
+        }
+
+        virtual void OnPreRender()
         {
         }
     };

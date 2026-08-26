@@ -56,7 +56,7 @@ namespace primitive
 
     void OpenGLRenderer::SetDepthTest(bool enable)
     {
-        if(enable)
+        if (enable)
         {
             glEnable(GL_DEPTH_TEST);
         }
@@ -71,8 +71,7 @@ namespace primitive
         glDrawArrays(
             GL_TRIANGLES,
             0,
-            static_cast<GLsizei>(vertexCount)
-        );
+            static_cast<GLsizei>(vertexCount));
     }
 
     void OpenGLRenderer::DrawIndexed(std::uint32_t indexCount)
@@ -81,7 +80,19 @@ namespace primitive
             GL_TRIANGLES,
             static_cast<GLsizei>(indexCount),
             GL_UNSIGNED_INT,
-            nullptr
-        );
+            nullptr);
+    }
+
+    void OpenGLRenderer::SetViewport(
+        std::uint32_t x,
+        std::uint32_t y,
+        std::uint32_t width,
+        std::uint32_t height)
+    {
+        glViewport(
+            static_cast<GLint>(x),
+            static_cast<GLint>(y),
+            static_cast<GLsizei>(width),
+            static_cast<GLsizei>(height));
     }
 }
