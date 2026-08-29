@@ -9,8 +9,6 @@ project(
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
-# Força bibliotecas estáticas por padrão para dependências do FetchContent
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
 include(FetchContent)
@@ -87,7 +85,6 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(stb)
 
-#-------------------imgui
 # --- Dear ImGui ---
 
 FetchContent_Declare(
@@ -124,7 +121,39 @@ target_link_libraries(
     PRIVATE
         SDL3::SDL3
 )
-#-------------------imgui
+
+# --- ImGuizmo ---
+
+FetchContent_Declare(
+    imguizmo
+    GIT_REPOSITORY https://github.com/CedricGuillemet/ImGuizmo.git
+    GIT_TAG 1.10
+    GIT_SHALLOW TRUE
+)
+
+FetchContent_GetProperties(imguizmo)
+
+if(NOT imguizmo_POPULATED)
+    FetchContent_Populate(imguizmo)
+endif()
+
+add_library(
+    PrimitiveImGuizmo STATIC
+    ${imguizmo_SOURCE_DIR}/src/ImGuizmo.cpp
+)
+
+target_include_directories(
+    PrimitiveImGuizmo
+    PUBLIC
+        ${imguizmo_SOURCE_DIR}/src
+)
+
+target_link_libraries(
+    PrimitiveImGuizmo
+    PRIVATE
+        PrimitiveImGui
+)
+#--------- ImgGuizo
 
 add_subdirectory(Engine)
 add_subdirectory(Editor)

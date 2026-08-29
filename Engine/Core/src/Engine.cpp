@@ -151,7 +151,7 @@ namespace primitive
         // -----------------------------------------
 
         auto cameraEntity = m_activeScene->CreateEntity("Camera");
-        auto &cameraTransform = cameraEntity.AddComponent<TransformComponent>();
+        auto &cameraTransform = cameraEntity.GetComponent<TransformComponent>();
 
         cameraTransform.transform.SetPosition(glm::vec3{0.0f, 2.0f, 0.0f});
 
@@ -172,7 +172,7 @@ namespace primitive
         // Cube Entity
         // -----------------------------------------
         auto cubeEntity = m_activeScene->CreateEntity("Cube");
-        auto &transform = cubeEntity.AddComponent<TransformComponent>();
+        auto &transform = cubeEntity.GetComponent<TransformComponent>();
 
         transform.transform.SetPosition(glm::vec3{0.0f, 5.0f, -10.0f});
         cubeEntity.AddComponent<ModelRendererComponent>(model, material);
@@ -190,7 +190,7 @@ namespace primitive
 
         auto groundEntity = m_activeScene->CreateEntity("Ground");
 
-        auto &groundTransform = groundEntity.AddComponent<TransformComponent>();
+        auto &groundTransform = groundEntity.GetComponent<TransformComponent>();
         groundTransform.transform.SetPosition(glm::vec3{0.0f, -1.0f, -10.0f});
         groundTransform.transform.SetScale(glm::vec3{6.0f, 0.5f, 6.0f});
 
@@ -241,7 +241,7 @@ namespace primitive
 
     void Engine::Update(float deltaTime)
     {
-        if (m_activeScene)
+        if (m_activeScene && m_updateActiveScene)
         {
             m_activeScene->Update(deltaTime, m_eventBus);
         }
@@ -259,7 +259,7 @@ namespace primitive
             0.15f,
             1.0f);
 
-        if (m_activeScene && m_renderActiveScene)
+        if (m_activeScene && m_renderActiveScene && m_updateActiveScene)
         {
             m_activeScene->Render(m_renderer);
         }
@@ -324,5 +324,25 @@ namespace primitive
     bool Engine::GetRenderActiveScene() const
     {
         return m_renderActiveScene;
+    }
+
+    void Engine::SetUpdateActiveScene(bool enabled)
+    {
+        m_updateActiveScene = enabled;
+    }
+
+    bool Engine::GetUpdateActiveScene() const
+    {
+        return m_updateActiveScene;
+    }
+
+    EventBus &Engine::GetEventBus()
+    {
+        return m_eventBus;
+    }
+
+    const EventBus& Engine::GetEventBus() const
+    {
+        return m_eventBus;
     }
 }

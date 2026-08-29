@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 
 #include <cstdint>
+#include <functional>
 
 namespace primitive
 {
@@ -11,7 +12,7 @@ namespace primitive
     public:
         ViewportPanel() = default;
         
-        void OnRender();
+        void OnRender(const std::function<void()>& overlayCallback);
         void SetTextureID(std::uint32_t textureID);
 
         [[nodiscard]]

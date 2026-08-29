@@ -55,11 +55,18 @@ namespace primitive
         [[nodiscard]]
         const Renderer &GetRenderer() const;
 
-        void SetRenderActiveScene(
-            bool enabled);
+        void SetRenderActiveScene(bool enabled);
 
         [[nodiscard]]
         bool GetRenderActiveScene() const;
+
+        void SetUpdateActiveScene(bool enable);
+
+        [[nodiscard]]
+        bool GetUpdateActiveScene() const;
+
+        EventBus &GetEventBus();
+        const EventBus &GetEventBus() const;
 
         void SetNativeEventCallback(NativeEventCallback callback);
         void SetGuiBeginCallback(FrameCallback callback);
@@ -77,6 +84,7 @@ namespace primitive
     private:
         bool m_running{false};
         bool m_renderActiveScene{true};
+        bool m_updateActiveScene{true};
 
         Configuration m_configuration;
         Platform m_platform;

@@ -5,21 +5,43 @@
 namespace primitive
 {
     class Collider;
+    class TransformComponent;
+    class CameraComponent;
+    class ModelRendererComponent;
+    class RigidBodyComponent;
     class InspectorPanel
     {
     public:
         InspectorPanel() = default;
 
-        explicit InspectorPanel(Entity* selectedEntity);
+        explicit InspectorPanel(Entity *selectedEntity);
 
-        void SetSelectionContext(Entity* selectedEntity);
+        void SetSelectionContext(Entity *selectedEntity);
         void OnRender();
         void SetAspectRatio(float aspectRatio);
-    
+        void SetReadOnly(bool readOnly);
+
+        template <typename Component, typename DrawFunction>
+        bool DrawComponent(const char *name, Entity entity, DrawFunction &&drawFunction, bool removable = true);
+
     private:
-        Entity* m_selectedEntity{nullptr};
+        Entity *m_selectionContext{nullptr};
         float m_aspectRatio{16.0f / 9.0f};
 
-        void DrawColliderProperties(Collider& collider);
+        bool m_readOnly{false};
+
+        void DrawAddComponentMenu();
+        void DrawColliderProperties(Collider &collider);
+        void DrawTransformProperties(TransformComponent &transformComponent);
+        void DrawCameraProperties(CameraComponent &cameraComponent);
+        void DrawModelProperties(ModelRendererComponent &modelRendererComponent);
+        void DrawRigidBodyProperties(RigidBodyComponent &rigidBodyComponent);
+
+        bool removeTransform = false;
+        bool removeCamera = false;
+        bool removeModelRenderer = false;
+        bool removeRigidBody = false;
+        bool removeBoxCollider = false;
+        bool removeSphereCollider = false;
     };
 }

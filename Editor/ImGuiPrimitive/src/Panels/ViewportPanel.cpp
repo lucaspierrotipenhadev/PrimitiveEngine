@@ -4,7 +4,7 @@
 
 namespace primitive
 {
-    void ViewportPanel::OnRender()
+    void ViewportPanel::OnRender(const std::function<void()> &overlayCallback)
     {
         ImGui::Begin("Viewport");
 
@@ -40,6 +40,11 @@ namespace primitive
                     m_size.y},
                 ImVec2{0.0f, 1.0f},
                 ImVec2{1.0f, 0.0f});
+        }
+
+        if (overlayCallback)
+        {
+            overlayCallback();
         }
 
         ImGui::End();

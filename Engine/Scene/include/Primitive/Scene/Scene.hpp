@@ -3,6 +3,7 @@
 #include <utility>
 #include <functional>
 #include <cstdint>
+#include <memory>
 
 #include "Primitive/Scene/ComponentManager.hpp"
 #include "Primitive/Scene/Entity.hpp"
@@ -125,6 +126,13 @@ namespace primitive
                 std::forward<Func>(function));
         }
 
+        template <typename Func>
+        void ForEachEntity(Func &&function) const
+        {
+            m_entityManager.ForEach(
+                std::forward<Func>(function));
+        }
+
         void Update(float deltaTime, EventBus &eventBus);
         void Render(Renderer &renderer);
 
@@ -139,6 +147,9 @@ namespace primitive
 
         [[nodiscard]]
         const PhysicsWorld &GetPhysicsWorld() const;
+
+        [[nodiscard]]
+        std::unique_ptr<Scene> Clone() const;
 
     private:
         void ValidateEntity(

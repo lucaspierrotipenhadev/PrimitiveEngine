@@ -20,53 +20,106 @@ namespace primitive
 
     void HierarchyPanel::OnRender()
     {
-        ImGui::Begin("Hierarchy");
+        ImGui::Begin(
+            "Hierarchy");
 
-        if (m_scene)
+        if (!m_scene)
         {
-            m_scene->ForEachEntity(
-                [this](EntityID entityID)
+            ImGui::TextDisabled(
+                "No active scene.");
+
+            ImGui::End();
+            return;
+        }
+
+        if (ImGui::Button(
+                "+ Entity"))
+        {
+            CreateEntity();
+        }
+
+        ImGui::Separator();
+
+        Entity entityToDestroy{};
+
+        m_scene->ForEachEntity(
+            [&](EntityID entityID)
+            {
+                Entity entity{
+                    entityID,
+                    m_scene};
+
+                ImGui::PushID(
+                    static_cast<int>(
+                        entityID));
+
+                std::string name =
+                    "Entity";
+
+                if (entity.HasComponent<
+                        TagComponent>())
                 {
-                    Entity entity(
-                        entityID,
-                        m_scene);
+                    name =
+                        entity
+                            .GetComponent<
+                                TagComponent>()
+                            .tag;
+                }
 
-                    ImGui::PushID(
-                        static_cast<int>(
-                            entityID));
+                const bool selected =
+                    m_selectionContext &&
+                    *m_selectionContext &&
+                    m_selectionContext
+                            ->GetID() ==
+                        entityID;
 
-                    std::string name =
-                        "Entity";
-
-                    if (entity.HasComponent<
-                            TagComponent>())
+                if (ImGui::Selectable(
+                        name.c_str(),
+                        selected))
+                {
+                    if (m_selectionContext)
                     {
-                        name =
-                            entity
-                                .GetComponent<
-                                    TagComponent>()
-                                .tag;
+                        *m_selectionContext =
+                            entity;
+                    }
+                }
+
+                if (ImGui::BeginPopupContextItem(
+                        "EntityContext"))
+                {
+                    if (ImGui::MenuItem(
+                            "Delete Entity"))
+                    {
+                        entityToDestroy =
+                            entity;
                     }
 
-                    const bool selected =
-                        m_selectedEntity &&
-                        m_selectedEntity->IsValid() &&
-                        m_selectedEntity->GetID() ==
-                            entityID;
+                    ImGui::EndPopup();
+                }
 
-                    if (ImGui::Selectable(
-                            name.c_str(),
-                            selected))
-                    {
-                        if (m_selectedEntity)
-                        {
-                            *m_selectedEntity =
-                                entity;
-                        }
-                    }
+                ImGui::PopID();
+            });
 
-                    ImGui::PopID();
-                });
+        if (ImGui::BeginPopupContextWindow(
+                "HierarchyContext",
+                ImGuiPopupFlags_MouseButtonRight |
+                    ImGuiPopupFlags_NoOpenOverItems))
+        {
+            if(!m_readOnly)
+            {
+                if (ImGui::MenuItem("Create Entity"))
+                {
+                CreateEntity();
+                }
+            }
+
+            ImGui::EndPopup();
+        }
+
+        if (entityToDestroy)
+        {
+            DestroyEntity(
+                entityToDestroy);
         }
 
         ImGui::End();
@@ -74,6 +127,79 @@ namespace primitive
 
     void HierarchyPanel::SetSelectionContext(Entity *selectedEntity)
     {
-        m_selectedEntity = selectedEntity;
+        m_selectionContext = selectedEntity;
+    }
+
+    void HierarchyPanel::DrawEntityNode(Entity entity)
+    {
+        if (!entity)
+        {
+            return;
+        }
+
+        std::string name = "Entity";
+
+        if (entity.HasComponent<TagComponent>())
+        {
+            name = entity.GetComponent<TagComponent>().tag;
+        }
+
+        ImGui::PushID(static_cast<int>(entity.GetID()));
+
+        const bool selected = m_selectionContext && *m_selectionContext && m_selectionContext->GetID() == entity.GetID();
+
+        if (ImGui::Selectable(name.c_str(), selected))
+        {
+            if (m_selectionContext)
+            {
+                *m_selectionContext = entity;
+            }
+        }
+
+        bool deleteEntity = false;
+
+        if (ImGui::BeginPopupContextItem("EntityContextMenu"))
+        {
+            if (ImGui::MenuItem("Delete entity"))
+            {
+                deleteEntity = true;
+            }
+        }
+
+        ImGui::PopID();
+    }
+
+    void HierarchyPanel::CreateEntity()
+    {
+        if (!m_scene)
+        {
+            return;
+        }
+
+        Entity entity = m_scene->CreateEntity("Entity");
+
+        if (m_selectionContext)
+        {
+            *m_selectionContext = entity;
+        }
+    }
+
+    void HierarchyPanel::DestroyEntity(Entity entity)
+    {
+        if (!m_scene || !entity)
+        {
+            return;
+        }
+
+        if (m_selectionContext && *m_selectionContext && m_selectionContext->GetID())
+        {
+            *m_selectionContext = {};
+        }
+        m_scene->DestroyEntity(entity);
+    }
+
+    void HierarchyPanel::SetReadOnly(bool readOnly)
+    {
+        m_readOnly = readOnly;
     }
 }

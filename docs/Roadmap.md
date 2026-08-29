@@ -103,10 +103,10 @@ Milestone 5 — Editor
 13. Scene viewport 
 14. render target / framebuffer
 15. viewport resize
-16. gizmos de Transform <----------------------------- Parado aqui
-17. criação e remoção de entidades
-18. adicionar/remover componentes
-19. Play / Stop mode
+16. gizmos de Transform 
+17. criação e remoção de entidades 
+18. adicionar/remover componentes <---Tem bugs a resolver --->
+19. Play / Stop mode 
 20. cena de edição vs cena em runtime
 21. salvar/carregar Scene
 22. primeiro fluxo completo no Editor

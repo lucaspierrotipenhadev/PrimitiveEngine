@@ -2,6 +2,9 @@
 
 #include "Primitive/Core/Layer.hpp"
 
+#include <imgui.h>
+#include <ImGuizmo.h>
+
 namespace primitive
 {
     class Engine;

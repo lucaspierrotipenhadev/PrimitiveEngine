@@ -12,6 +12,8 @@
 #include "Primitive/Scene/Components/ModelRendererComponent.hpp"
 #include "Primitive/Scene/Components/CameraComponent.hpp"
 #include "Primitive/Scene/Components/TagComponent.hpp"
+#include "Primitive/Scene/Components/RigidBodyComponent.hpp"
+#include "Primitive/Scene/Components/BoxColliderComponent.hpp"
 
 #include "Primitive/Renderer/Renderer.hpp"
 #include "Primitive/Renderer/Shader.hpp"
@@ -22,18 +24,12 @@ namespace primitive
 {
     Entity Scene::CreateEntity(const std::string& name)
     {
-        const EntityID id =
-            m_entityManager.Create();
+        const EntityID id = m_entityManager.Create();
 
-        m_componentManager
-        .Add<TagComponent>(
-            id,
-            name
-        );
+        m_componentManager.Add<TagComponent>(id, name);
+        m_componentManager.Add<TransformComponent>(id);
 
-        return Entity{
-            id,
-            this};
+        return Entity{id, this};
     }
 
     void Scene::DestroyEntity(
@@ -195,5 +191,54 @@ namespace primitive
     float Scene::GetFixedTimeStep() const
     {
         return m_physicsTimeStep.GetStep();
+    }
+
+    std::unique_ptr<Scene> Scene::Clone() const
+    {
+        auto clonedScene = std::make_unique<Scene>();
+        clonedScene->SetFixedTimeStep(GetFixedTimeStep());
+
+        ForEachEntity(
+            [&](EntityID sourceID)
+            {
+                std::string name ="Entity";
+
+                if(HasComponent<TagComponent>(sourceID))
+                {
+                    name = GetComponent<TagComponent>(sourceID).tag;
+                }
+
+                Entity destination = clonedScene->CreateEntity(name);
+                const EntityID destinationID = destination.GetID();
+
+                //transform
+                if(HasComponent<TransformComponent>(sourceID))
+                {
+                    clonedScene->GetComponent<TransformComponent>(destinationID) = GetComponent<TransformComponent>(sourceID);
+                }
+                //camera
+                if(HasComponent<CameraComponent>(sourceID))
+                {
+                    clonedScene->AddComponent<CameraComponent>(destinationID) = GetComponent<CameraComponent>(sourceID);
+                }
+                //Model renderer
+                if(HasComponent<ModelRendererComponent>(sourceID))
+                {
+                    clonedScene->AddComponent<ModelRendererComponent>(destinationID) = GetComponent<ModelRendererComponent>(sourceID);
+                }
+                //Rigid Body
+                if(HasComponent<RigidBodyComponent>(sourceID))
+                {
+                    clonedScene->AddComponent<RigidBodyComponent>(destinationID) = GetComponent<RigidBodyComponent>(sourceID);
+                }
+                //Box Collider
+                if(HasComponent<BoxColliderComponent>(sourceID))
+                {
+                    clonedScene->AddComponent<BoxColliderComponent>(destinationID) = GetComponent<BoxColliderComponent>(sourceID);
+                }
+            }
+        );
+
+        return clonedScene;
     }
 }

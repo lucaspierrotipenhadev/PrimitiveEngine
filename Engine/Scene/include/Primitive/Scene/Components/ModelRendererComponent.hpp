@@ -13,6 +13,8 @@ namespace primitive
         std::shared_ptr<Model> model;
         std::shared_ptr<Material> material;
 
+        ModelRendererComponent()=default;
+
         ModelRendererComponent(
             std::shared_ptr<Model> modelValue,
             std::shared_ptr<Material> materialValue)

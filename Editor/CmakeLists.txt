@@ -24,5 +24,6 @@ target_link_libraries(
     PRIVATE
         PrimitiveEngine
         PrimitiveImGui
+        PrimitiveImGuizmo
         SDL3::SDL3
 )
