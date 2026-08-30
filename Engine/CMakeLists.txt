@@ -39,6 +39,7 @@ add_library(PrimitiveEngine STATIC
     Scene/src/Entity.cpp
     Scene/src/EntityManager.cpp
     Scene/src/Transform.cpp
+    Scene/src/SceneSerializer.cpp
 
     Physics/src/PhysicsWorld.cpp
     Physics/src/Bounds.cpp
@@ -76,4 +77,5 @@ target_link_libraries(
         glad_gl_core_46
         glm::glm
         assimp::assimp
+        nlohmann_json::nlohmann_json
 )

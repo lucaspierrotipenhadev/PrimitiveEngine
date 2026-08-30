@@ -32,31 +32,23 @@ namespace primitive
         return Entity{id, this};
     }
 
-    void Scene::DestroyEntity(
-        Entity entity)
+    void Scene::DestroyEntity(Entity entity)
     {
-        const EntityID id =
-            entity.GetID();
+        const EntityID id = entity.GetID();
 
         ValidateEntity(id);
-
         m_componentManager.RemoveAll(id);
-
         m_entityManager.Destroy(id);
     }
 
-    bool Scene::IsEntityAlive(
-        EntityID entity) const
+    bool Scene::IsEntityAlive(EntityID entity) const
     {
-        return m_entityManager.IsAlive(
-            entity);
+        return m_entityManager.IsAlive(entity);
     }
 
-    std::size_t
-    Scene::GetEntityCount() const
+    std::size_t Scene::GetEntityCount() const
     {
-        return m_entityManager
-            .GetAliveCount();
+        return m_entityManager.GetAliveCount();
     }
 
     void Scene::Clear()
@@ -67,19 +59,16 @@ namespace primitive
         m_entityManager.Clear();
     }
 
-    void Scene::ValidateEntity(
-        EntityID entity) const
+    void Scene::ValidateEntity(EntityID entity) const
     {
         if (entity == NullEntity)
         {
-            throw std::runtime_error(
-                "Invalid entity.");
+            throw std::runtime_error("Invalid entity.");
         }
 
         if (!m_entityManager.IsAlive(entity))
         {
-            throw std::runtime_error(
-                "Entity is not alive.");
+            throw std::runtime_error("Entity is not alive.");
         }
     }
 

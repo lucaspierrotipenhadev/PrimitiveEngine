@@ -36,12 +36,5 @@ namespace primitive
         void DrawCameraProperties(CameraComponent &cameraComponent);
         void DrawModelProperties(ModelRendererComponent &modelRendererComponent);
         void DrawRigidBodyProperties(RigidBodyComponent &rigidBodyComponent);
-
-        bool removeTransform = false;
-        bool removeCamera = false;
-        bool removeModelRenderer = false;
-        bool removeRigidBody = false;
-        bool removeBoxCollider = false;
-        bool removeSphereCollider = false;
     };
 }

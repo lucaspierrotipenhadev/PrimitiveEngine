@@ -1,16 +1,20 @@
 #include "Primitive/Renderer/FrameBuffer.hpp"
 #include "Primitive/ImGuiPrimitive/EditorLayer.hpp"
 
+#include "Primitive/ImGuiPrimitive/FileDialogs.hpp"
+
 #include "Primitive/Core/Engine.hpp"
 
 #include "Primitive/Renderer/OpenGL/OpenGLFrameBuffer.hpp"
 
 #include "Primitive/Scene/Components/CameraComponent.hpp"
 #include "Primitive/Scene/Components/TransformComponent.hpp"
+#include "Primitive/Scene/SceneSerializer.hpp"
 
 #include <cstdint>
 
 #include <imgui.h>
+#include <imgui_internal.h>
 #include <ImGuizmo.h>
 
 namespace primitive
@@ -20,13 +24,13 @@ namespace primitive
         m_engine = &engine;
         m_engine->SetRenderActiveScene(false);
         m_engine->SetUpdateActiveScene(false);
+
         m_editorScene = engine.GetActiveScene();
-        m_hierarchyPanel.SetScene(m_editorScene);
+
         m_hierarchyPanel.SetSelectionContext(&m_selectedEntity);
         m_inspectorPanel.SetSelectionContext(&m_selectedEntity);
 
-        m_inspectorPanel.SetReadOnly(false);
-        m_hierarchyPanel.SetReadOnly(false);
+        NewScene();
 
         FramebufferSpecification specification;
 
@@ -59,16 +63,16 @@ namespace primitive
             return;
         }
 
-        Scene* scene = GetActiveEditorScene();
+        Scene *scene = GetActiveEditorScene();
 
-        if(!scene)
+        if (!scene)
         {
             return;
         }
 
         if (m_sceneState == SceneState::Play)
         {
-           scene->Update(deltaTime, m_engine->GetEventBus());     
+            scene->Update(deltaTime, m_engine->GetEventBus());
         }
 
         const glm::vec2 viewportSize = m_viewportPanel.GetSize();
@@ -87,34 +91,30 @@ namespace primitive
                 m_sceneFramebuffer
                     ->GetSpecification();
 
-            if (specification.width != width ||
-                specification.height != height)
+            if (specification.width != width || specification.height != height)
             {
                 m_sceneFramebuffer->Resize(width, height);
-
-                const float aspectRatio =
-                    static_cast<float>(width) /
-                    static_cast<float>(height);
-
-                scene->ForEach<
-                    CameraComponent>(
-                    [aspectRatio](
-                        EntityID,
-                        CameraComponent &camera)
-                    {
-                        camera.UppdateProjection(
-                            aspectRatio);
-                    });
-
-                m_inspectorPanel
-                    .SetAspectRatio(
-                        aspectRatio);
             }
+            const float aspectRatio =
+                static_cast<float>(width) /
+                static_cast<float>(height);
+
+            scene->ForEach<
+                CameraComponent>(
+                [aspectRatio](
+                    EntityID,
+                    CameraComponent &camera)
+                {
+                    camera.UppdateProjection(
+                        aspectRatio);
+                });
+
+            m_inspectorPanel.SetAspectRatio(aspectRatio);
         }
 
         m_sceneFramebuffer->Bind();
 
-        auto& renderer = m_engine->GetRenderer();
+        auto &renderer = m_engine->GetRenderer();
 
         renderer.Clear(0.1f, 0.1f, 0.1f, 1.0f);
 
@@ -122,19 +122,14 @@ namespace primitive
 
         m_sceneFramebuffer->Unbind();
 
-        renderer.SetViewport(0, 0, 
-            static_cast<std::uint32_t>(m_engine->GetWindow().GetWidth()),
-            static_cast<std::uint32_t>(m_engine->GetWindow().GetHeight()));
+        renderer.SetViewport(0, 0,
+                             static_cast<std::uint32_t>(m_engine->GetWindow().GetWidth()),
+                             static_cast<std::uint32_t>(m_engine->GetWindow().GetHeight()));
     }
 
     void EditorLayer::OnRender()
     {
-        constexpr ImGuiDockNodeFlags dockspaceFlags = ImGuiDockNodeFlags_PassthruCentralNode;
-        ImGuiViewport *viewport = ImGui::GetMainViewport();
-        const ImGuiID dockspaceID = ImGui::GetID("PrimitiveEditorDockspace");
-
-        ImGui::DockSpaceOverViewport(dockspaceID, viewport, dockspaceFlags);
-
+        DrawDockspace();
         DrawToolBar();
 
         m_hierarchyPanel.OnRender();
@@ -167,7 +162,7 @@ namespace primitive
         {
             const Window &window = m_engine->GetWindow();
 
-            if (m_engine && m_sceneState ==  SceneState::Edit && m_viewportPanel.IsFocused() && !ImGuizmo::IsUsing())
+            if (m_engine && m_sceneState == SceneState::Edit && m_viewportPanel.IsFocused() && !ImGuizmo::IsUsing())
             {
                 auto &input = m_engine->GetInput();
 
@@ -201,7 +196,7 @@ namespace primitive
             return;
         }
 
-        Scene* scene = GetActiveEditorScene();
+        Scene *scene = GetActiveEditorScene();
 
         if (!scene)
         {
@@ -345,6 +340,8 @@ namespace primitive
                     scale[0],
                     scale[1],
                     scale[2]});
+
+            MarkSceneDirty();
         }
     }
 
@@ -357,7 +354,7 @@ namespace primitive
 
         m_runtimeScene = m_editorScene->Clone();
 
-        if(!m_runtimeScene)
+        if (!m_runtimeScene)
         {
             return;
         }
@@ -376,7 +373,7 @@ namespace primitive
             return;
         }
 
-        if(!m_editorScene)
+        if (!m_editorScene)
         {
             return;
         }
@@ -389,14 +386,86 @@ namespace primitive
         m_inspectorPanel.SetReadOnly(false);
     }
 
+    void EditorLayer::DrawMenuBar()
+    {
+        if (!ImGui::BeginMenuBar())
+        {
+            return;
+        }
+
+        if (ImGui::BeginMenu("File"))
+        {
+            if (ImGui::MenuItem("New", "Ctrl+N", false, m_sceneState == SceneState::Edit))
+            {
+                NewScene();
+            }
+
+            if (ImGui::MenuItem("Open...", "Ctrl+O", false, m_sceneState == SceneState::Edit))
+            {
+                OpenScene();
+            }
+
+            if (ImGui::MenuItem("Save", "Ctrl+S", false, m_sceneState == SceneState::Edit))
+            {
+                SaveScene();
+            }
+
+            if (ImGui::MenuItem("Save As", "Ctrl+Shift+S", false, m_sceneState == SceneState::Edit))
+            {
+                SaveSceneAs();
+            }
+
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Exit"))
+            {
+                m_engine->Stop();
+            }
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Scene"))
+        {
+            if (m_sceneState == SceneState::Edit)
+            {
+                if (ImGui::MenuItem("Play"))
+                {
+                    OnScenePlay();
+                }
+            }
+            else
+            {
+                if (ImGui::MenuItem("Stop"))
+                {
+                    OnSceneStop();
+                }
+            }
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Window"))
+        {
+            if (ImGui::MenuItem("Reset Layout"))
+            {
+                m_resetDockLayout = true;
+            }
+
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+    }
+
     void EditorLayer::DrawToolBar()
     {
         ImGui::Begin("ToolBar", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
+        ImGui::Text("Scene: %s%s", m_currentSceneName.c_str(), m_sceneDirty ? " *" : "");
 
         const float buttonWidth = 70.0f;
         const float availableWidth = ImGui::GetContentRegionAvail().x;
 
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (availableWidth - buttonWidth) * 0.5f);
+
         const char *label = m_sceneState == SceneState::Edit ? "Play" : "Stop";
 
         if (ImGui::Button(label, ImVec2{buttonWidth, 0.0f}))
@@ -410,6 +479,7 @@ namespace primitive
                 OnSceneStop();
             }
         }
+
         ImGui::End();
     }
 
@@ -423,7 +493,7 @@ namespace primitive
         return m_editorScene;
     }
 
-    const Scene* EditorLayer::GetActiveEditorScene() const
+    const Scene *EditorLayer::GetActiveEditorScene() const
     {
         if (m_sceneState == SceneState::Play)
         {
@@ -431,5 +501,336 @@ namespace primitive
         }
 
         return m_editorScene;
+    }
+
+    void EditorLayer::UpdateSceneCameraProjections()
+    {
+        if (!m_editorScene)
+        {
+            return;
+        }
+
+        const glm::vec2 viewportSize = m_viewportPanel.GetSize();
+
+        if (viewportSize.x <= 0.0f || viewportSize.y <= 0.0f)
+        {
+            return;
+        }
+
+        const float aspectRatio = viewportSize.x / viewportSize.y;
+
+        m_editorScene->ForEach<CameraComponent>(
+            [aspectRatio](
+                EntityID,
+                CameraComponent &camera)
+            {
+                camera.UppdateProjection(
+                    aspectRatio);
+            });
+
+        m_inspectorPanel.SetAspectRatio(aspectRatio);
+    }
+
+    void EditorLayer::SetCurrentScenePath(const std::filesystem::path &path)
+    {
+        m_currentScenePath = path;
+
+        if (!path.empty())
+        {
+            m_currentSceneName = path.stem().string();
+        }
+        else
+        {
+            m_currentSceneName = "Untitled";
+        }
+    }
+
+    void EditorLayer::ClearCurrentScenePath()
+    {
+        m_currentScenePath.clear();
+        m_currentSceneName = "Untitled";
+    }
+
+    bool EditorLayer::HasCurrentScenePath()
+    {
+        return !m_currentScenePath.empty();
+    }
+
+    const std::filesystem::path &EditorLayer::GetCurrentScenePath() const
+    {
+        return m_currentScenePath;
+    }
+
+    const std::string &EditorLayer::GetCurrentSceneName() const
+    {
+        return m_currentSceneName;
+    }
+
+    void EditorLayer::NewScene()
+    {
+        if (!m_engine)
+        {
+            return;
+        }
+
+        if (m_sceneState == SceneState::Play)
+        {
+            OnSceneStop();
+        }
+
+        m_selectedEntity = {};
+
+        SceneSerializer serialize(*m_editorScene, m_engine->GetResourceManager());
+
+        if (!serialize.Deserialize("Assets/Scenes/Templates/DefaultScene.pscene"))
+        {
+            m_editorScene->Clear();
+        }
+
+        ClearCurrentScenePath();
+        ClearSceneDirty();
+        UpdateSceneCameraProjections();
+
+        m_hierarchyPanel.SetScene(m_editorScene);
+        m_hierarchyPanel.SetReadOnly(false);
+        m_inspectorPanel.SetReadOnly(false);
+    }
+
+    bool EditorLayer::SaveScene()
+    {
+        if (!m_editorScene || m_sceneState != SceneState::Edit)
+        {
+            return false;
+        }
+
+        if (!HasCurrentScenePath())
+        {
+            return SaveSceneAs();
+        }
+
+        return SaveSceneToPath(GetCurrentScenePath());
+    }
+
+    bool EditorLayer::SaveSceneAs()
+    {
+        if (!m_editorScene || m_sceneState != SceneState::Edit)
+        {
+            return false;
+        }
+
+        const auto selectedPath = FileDialogs::SaveScene();
+
+        if (!selectedPath)
+        {
+            return false;
+        }
+        std::filesystem::path path = *selectedPath;
+
+        if (path.extension() != ".pscene")
+        {
+            path.replace_extension(".pscene");
+        }
+
+        return SaveSceneToPath(path);
+    }
+
+    bool EditorLayer::SaveSceneToPath(const std::filesystem::path &path)
+    {
+        if (!m_editorScene || m_sceneState != SceneState::Edit || path.empty())
+        {
+            return false;
+        }
+
+        SceneSerializer serializer(*m_editorScene, m_engine->GetResourceManager());
+
+        if (!serializer.Serialize(path))
+        {
+            return false;
+        }
+
+        SetCurrentScenePath(path);
+        ClearSceneDirty();
+
+        return true;
+    }
+
+    bool EditorLayer::OpenScene()
+    {
+        if (!m_editorScene || m_sceneState != SceneState::Edit)
+        {
+            return false;
+        }
+
+        const auto selectedPath = FileDialogs::OpenScene();
+
+        if (!selectedPath)
+        {
+            return false;
+        }
+
+        ClearSceneDirty();
+
+        return OpenScene(*selectedPath);
+    }
+
+    bool EditorLayer::OpenScene(const std::filesystem::path &path)
+    {
+        if (!m_editorScene || m_sceneState != SceneState::Edit)
+        {
+            return false;
+        }
+
+        if (path.extension() != ".pscene")
+        {
+            return false;
+        }
+
+        m_selectedEntity = {};
+
+        SceneSerializer serializer(*m_editorScene, m_engine->GetResourceManager());
+
+        if (!serializer.Deserialize(path))
+        {
+            return false;
+        }
+
+        SetCurrentScenePath(path);
+
+        m_hierarchyPanel.SetScene(m_editorScene);
+        m_hierarchyPanel.SetReadOnly(false);
+        m_inspectorPanel.SetReadOnly(false);
+
+        UpdateSceneCameraProjections();
+        ClearSceneDirty();
+
+        return true;
+    }
+
+    void EditorLayer::MarkSceneDirty()
+    {
+        if (m_sceneState == SceneState::Edit)
+        {
+            m_sceneDirty = true;
+        }
+    }
+
+    void EditorLayer::ClearSceneDirty()
+    {
+        m_sceneDirty = false;
+    }
+
+    bool EditorLayer::IsSceneDirty() const
+    {
+        return m_sceneDirty;
+    }
+
+    void EditorLayer::SetupDefaultDockLayout(ImGuiID dockspaceID, const ImVec2 &dockspaceSize)
+    {
+        ImGui::DockBuilderRemoveNode(dockspaceID);
+        ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_DockSpace);
+        ImGui::DockBuilderSetNodeSize(dockspaceID, dockspaceSize);
+
+        ImGuiID dockMain = dockspaceID;
+
+        ImGuiID dockLeft = 0;
+        ImGuiID dockRight = 0;
+
+        ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Left, 0.20f, &dockLeft, &dockMain);
+        ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Right, 0.25f, &dockRight, &dockMain);
+
+        ImGui::DockBuilderDockWindow("Hierarchy", dockLeft);
+        ImGui::DockBuilderDockWindow("Inspector", dockRight);
+        ImGui::DockBuilderDockWindow("Viewport", dockMain);
+
+        ImGui::DockBuilderFinish(dockspaceID);
+    }
+
+    void EditorLayer::DrawDockspace()
+    {
+        static bool dockspaceOpen = true;
+
+        ImGuiWindowFlags windowFlags =
+            ImGuiWindowFlags_MenuBar |
+            ImGuiWindowFlags_NoDocking;
+
+        const ImGuiViewport *viewport = ImGui::GetMainViewport();
+
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(viewport->WorkSize);
+        ImGui::SetNextWindowViewport(viewport->ID);
+
+        windowFlags |=
+            ImGuiWindowFlags_NoTitleBar |
+            ImGuiWindowFlags_NoCollapse |
+            ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoBringToFrontOnFocus |
+            ImGuiWindowFlags_NoNavFocus;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
+
+        ImGui::Begin("PrimitiveDockspace", &dockspaceOpen, windowFlags);
+        ImGui::PopStyleVar(3);
+
+        DrawMenuBar();
+
+        const ImGuiID dockspaceID = ImGui::GetID("PrimitiveEditorDockspace");
+
+        if (ImGui::DockBuilderGetNode(dockspaceID) == nullptr)
+        {
+            SetupDefaultDockLayout(dockspaceID, viewport->WorkSize);
+            m_resetDockLayout = false;
+        }
+
+        ImGui::DockSpace(dockspaceID, ImVec2{0.0f, 0.0f}, ImGuiDockNodeFlags_None);
+
+        ImGui::End();
+    }
+
+    void EditorLayer::HandleEditorShortcuts()
+    {
+        if (!m_engine || m_sceneState != SceneState::Edit)
+        {
+            return;
+        }
+
+        auto &input = m_engine->GetInput();
+
+        const bool control =
+            input.IsKeyDown(Key::LeftCtrl) ||
+            input.IsKeyDown(Key::RightCtrl);
+
+        const bool shift =
+            input.IsKeyDown(Key::LeftShift) ||
+            input.IsKeyDown(Key::RightShift);
+
+        if (!control)
+        {
+            return;
+        }
+
+        if (input.IsKeyPressed(Key::N))
+        {
+            NewScene();
+        }
+
+        if (input.IsKeyPressed(Key::O))
+        {
+            OpenScene();
+        }
+
+        if (input.IsKeyPressed(Key::S))
+        {
+            if (shift)
+            {
+                SaveSceneAs();
+            }
+            else
+            {
+                SaveScene();
+            }
+        }
     }
 }

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <memory>
+#include <filesystem>
+#include <string>
 
 #include "Primitive/Core/Layer.hpp"
 
@@ -40,23 +42,22 @@ namespace primitive
         EditorLayer() = default;
         ~EditorLayer() override = default;
 
-        EditorLayer(
-            const EditorLayer&) = delete;
+        EditorLayer(const EditorLayer&) = delete;
+        EditorLayer& operator=(const EditorLayer&) = delete;
 
-        EditorLayer& operator=(
-            const EditorLayer&) = delete;
-
-        void OnAttach(
-            Engine& engine
-        ) override;
-
+        void OnAttach(Engine& engine) override;
         void OnDetach() override;
-
-        void OnUpdate(
-            float deltaTime
-        ) override;
-
+        void OnUpdate(float deltaTime) override;
         void OnRender() override;
+
+        void UpdateSceneCameraProjections();
+        void NewScene();
+        bool OpenScene();
+        bool OpenScene(const std::filesystem::path& path);
+
+        bool SaveScene();
+        bool SaveSceneAs();
+        bool SaveSceneToPath(const std::filesystem::path& path);
 
     private:
         [[nodiscard]]
@@ -64,6 +65,35 @@ namespace primitive
 
         [[nodiscard]]
         const Scene* GetActiveEditorScene() const;
+
+        [[nodiscard]]
+        bool HasCurrentScenePath();
+
+        [[nodiscard]]
+        bool IsSceneDirty() const;
+
+        [[nodiscard]]
+        const std::filesystem::path& GetCurrentScenePath() const;
+
+        [[nodiscard]]
+        const std::string& GetCurrentSceneName() const;
+
+        void OnScenePlay();
+        void OnSceneStop();
+
+        void DrawToolBar();
+        void DrawDockspace();
+        void DrawGuizmo();
+        void DrawMenuBar();
+
+        void HandleEditorShortcuts();
+
+        void SetupDefaultDockLayout(ImGuiID dockspaceID, const ImVec2& dockspaceSize);
+        void SetCurrentScenePath(const std::filesystem::path& path);
+
+        void MarkSceneDirty();
+        void ClearSceneDirty();
+        void ClearCurrentScenePath();
 
     private:
         Engine* m_engine{nullptr};
@@ -79,10 +109,10 @@ namespace primitive
         std::unique_ptr<Scene> m_runtimeScene;
         SceneState m_sceneState={SceneState::Edit};
 
+        std::filesystem::path m_currentScenePath;
+        std::string m_currentSceneName{"Unititled"};
 
-        void DrawGuizmo();
-        void OnScenePlay();
-        void OnSceneStop();
-        void DrawToolBar();
+        bool m_sceneDirty={false};
+        bool m_resetDockLayout{false};
     };
 }

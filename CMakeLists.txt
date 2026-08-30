@@ -153,7 +153,33 @@ target_link_libraries(
     PRIVATE
         PrimitiveImGui
 )
-#--------- ImgGuizo
+#--------- ImgGuizo - fim
+
+#------ nholman json
+
+FetchContent_Declare(
+    json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.12.0
+)
+
+FetchContent_MakeAvailable(json)
+
+#------ nholman json fim
+
+#------ nfd
+
+include(FetchContent)
+
+FetchContent_Declare(
+    nativefiledialog
+    GIT_REPOSITORY https://github.com/btzy/nativefiledialog-extended.git
+    GIT_TAG v1.3.0
+)
+
+FetchContent_MakeAvailable(nativefiledialog)
+
+#------ nfd
 
 add_subdirectory(Engine)
 add_subdirectory(Editor)

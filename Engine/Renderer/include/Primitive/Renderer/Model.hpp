@@ -14,8 +14,7 @@ namespace primitive
     class Model final : public Resource
     {
     public:
-        explicit Model(
-            std::string_view filepath);
+        explicit Model(std::string_view filepath);
 
         ~Model() override;
 

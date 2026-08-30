@@ -6,6 +6,7 @@ add_executable(
     ImGuiPrimitive/src/EditorApplication.cpp
     ImGuiPrimitive/src/ImGuiLayer.cpp
     ImGuiPrimitive/src/EditorLayer.cpp
+    ImGuiPrimitive/src/FileDialogs.cpp
 
     ImGuiPrimitive/src/Panels/HierarchyPanel.cpp
     ImGuiPrimitive/src/Panels/InspectorPanel.cpp
@@ -26,4 +27,5 @@ target_link_libraries(
         PrimitiveImGui
         PrimitiveImGuizmo
         SDL3::SDL3
+        nfd
 )

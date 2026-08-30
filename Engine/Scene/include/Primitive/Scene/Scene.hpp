@@ -28,17 +28,31 @@ namespace primitive
 
         [[nodiscard]]
         Entity CreateEntity(const std::string &name = "Entity");
-
-        void DestroyEntity(Entity entity);
-
+        
         [[nodiscard]]
-        bool IsEntityAlive(
-            EntityID entity) const;
+        bool IsEntityAlive(EntityID entity) const;
 
         [[nodiscard]]
         std::size_t GetEntityCount() const;
 
+        [[nodiscard]]
+        float GetFixedTimeStep() const;
+
+        [[nodiscard]]
+        PhysicsWorld &GetPhysicsWorld();
+
+        [[nodiscard]]
+        const PhysicsWorld &GetPhysicsWorld() const;
+
+        [[nodiscard]]
+        std::unique_ptr<Scene> Clone() const;
+
+        void DestroyEntity(Entity entity);
         void Clear();
+        void Update(float deltaTime, EventBus &eventBus);
+        void Render(Renderer &renderer);
+        void SetFixedTimeStep(float fixedTimeStep);
+        void AdvancePhysics(float deltaTime, EventBus &eventBus);
 
         template <typename T, typename... Args>
         T &AddComponent(
@@ -133,27 +147,8 @@ namespace primitive
                 std::forward<Func>(function));
         }
 
-        void Update(float deltaTime, EventBus &eventBus);
-        void Render(Renderer &renderer);
-
-        void SetFixedTimeStep(float fixedTimeStep);
-        void AdvancePhysics(float deltaTime, EventBus &eventBus);
-
-        [[nodiscard]]
-        float GetFixedTimeStep() const;
-
-        [[nodiscard]]
-        PhysicsWorld &GetPhysicsWorld();
-
-        [[nodiscard]]
-        const PhysicsWorld &GetPhysicsWorld() const;
-
-        [[nodiscard]]
-        std::unique_ptr<Scene> Clone() const;
-
     private:
-        void ValidateEntity(
-            EntityID entity) const;
+        void ValidateEntity(EntityID entity) const;
 
         template <typename T>
         [[nodiscard]]

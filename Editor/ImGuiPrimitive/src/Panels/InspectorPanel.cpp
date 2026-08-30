@@ -46,175 +46,84 @@ namespace primitive
             return;
         }
 
-        Entity &entity =
-            *m_selectionContext;
+        Entity &entity = *m_selectionContext;
 
         if (entity.HasComponent<TagComponent>())
         {
-            const auto &tag =
-                entity.GetComponent<TagComponent>();
-
-            ImGui::Text(
-                "%s",
-                tag.tag.c_str());
+            const auto &tag = entity.GetComponent<TagComponent>();
+            ImGui::Text("%s", tag.tag.c_str());
         }
         else
         {
-            ImGui::Text(
-                "Entity %u",
-                static_cast<unsigned int>(
-                    entity.GetID()));
+            ImGui::Text("Entity %u", static_cast<unsigned int>(entity.GetID()));
         }
 
-        ImGui::TextDisabled(
-            "Entity ID: %u",
-            static_cast<unsigned int>(
-                entity.GetID()));
+        ImGui::TextDisabled("Entity ID: %u", static_cast<unsigned int>(entity.GetID()));
 
         ImGui::Separator();
 
+        bool removeCamera = false;
+        bool removeModelRenderer = false;
+        bool removeRigidBody = false;
+        bool removeBoxCollider = false;
+        bool removeSphereCollider = false;
+
         // transform
-        if (entity.HasComponent<TransformComponent>())
-        {
-            if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                DrawTransformProperties(entity.GetComponent<TransformComponent>());
-            }
-        }
-
+        DrawComponent<TransformComponent>("Transform", entity, [this](TransformComponent &component)
+                                          { DrawTransformProperties(component); }, false);
         // camera
-        if (entity.HasComponent<CameraComponent>())
+        if (DrawComponent<CameraComponent>("Camera", entity, [this](CameraComponent &component)
+                                           { DrawCameraProperties(component); }))
         {
-            if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                DrawCameraProperties(entity.GetComponent<CameraComponent>());
-            }
+            removeCamera = true;
         }
-
         // model
-        if (entity.HasComponent<ModelRendererComponent>())
+        if (DrawComponent<ModelRendererComponent>("Model", entity, [this](ModelRendererComponent &component)
+                                                  { DrawModelProperties(component); }))
         {
-            if (ImGui::CollapsingHeader("Model Renderer"))
-            {
-                DrawModelProperties(entity.GetComponent<ModelRendererComponent>());
-            }
+            removeModelRenderer = true;
         }
-
-        // Rigid Body
-        if (entity.HasComponent<RigidBodyComponent>())
+        // rigid body
+        if (DrawComponent<RigidBodyComponent>("RigidBody", entity, [this](RigidBodyComponent &component)
+                                              { DrawRigidBodyProperties(component); }))
         {
-            if (ImGui::CollapsingHeader("Rigidbody", ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                DrawRigidBodyProperties(entity.GetComponent<RigidBodyComponent>());
-            }
+            removeRigidBody = true;
         }
-
-        // Collider
-        if (entity.HasComponent<BoxColliderComponent>())
-        {
-            if (ImGui::CollapsingHeader("Box Collider"))
-            {
-                auto &component = entity.GetComponent<BoxColliderComponent>();
-
+        // collider
+        if (DrawComponent<BoxColliderComponent>("bOX Collider", entity, [this](BoxColliderComponent &component)
+                                                {
                 DrawColliderProperties(component.collider);
 
                 glm::vec3 halfExtents = component.halfExtends;
 
-                if (ImGui::DragFloat3("Half Extents", &halfExtents.x, 0.05f, 0.001f, 10000.0f))
+                if(ImGui::DragFloat3("Half Extents", &halfExtents.x, 0.05f, 0.001f, 10000.0f))
                 {
-                    halfExtents = glm::max(halfExtents, glm::vec3{0.001f});
-                    component.halfExtends = halfExtents;
-                }
-            }
-        }
-
-        if (entity.HasComponent<SphereColliderComponent>())
-        {
-            if (ImGui::CollapsingHeader("Sphere Collider"))
-            {
-                ImGui::TextDisabled("SphereColliderComponent");
-            }
-        }
-
-        // Add components
-        if (!entity.HasComponent<ModelRendererComponent>())
-        {
-            if (ImGui::MenuItem("Model Renderer"))
-            {
-                entity.AddComponent<ModelRendererComponent>();
-                ImGui::CloseCurrentPopup();
-            }
-        }
-
-        ImGui::Separator();
-
-        //transform
-        if (DrawComponent<TransformComponent>("Transform", entity, [this](TransformComponent &component)
-            {
-                DrawTransformProperties(component);
-            }, false))
-        {
-            removeTransform = false;
-        }
-        //camera
-        if (DrawComponent<CameraComponent>("Camera", entity, [this](CameraComponent &component)
-            {
-                DrawCameraProperties(component);
-            }))
-        {
-            removeCamera = true;
-        }
-        //model
-        if (DrawComponent<ModelRendererComponent>("Model", entity, [this](ModelRendererComponent &component)
-            {
-                DrawModelProperties(component);
-            }))
-        {
-            removeModelRenderer = true;
-        }
-        //rigid body
-        if (DrawComponent<RigidBodyComponent>("RigidBody", entity, [this](RigidBodyComponent &component)
-            {
-                DrawRigidBodyProperties(component);
-            }))
-        {
-            removeRigidBody = true;
-        }
-        //collider
-        if (DrawComponent<BoxColliderComponent>("Collider", entity, [this](BoxColliderComponent &component)
-            {
-                DrawColliderProperties(component.collider);
-            }))
+                 component.halfExtends = glm::max(halfExtents, glm::vec3({0.001f}));
+                } }))
         {
             removeBoxCollider = true;
         }
 
-        //remoções - transform
-        if(removeTransform)
-        {
-            entity.RemoveComponent<TransformComponent>();
-        }
-
-        //remoções - camera
-        if(removeCamera)
+        // remoções - camera
+        if (removeCamera)
         {
             entity.RemoveComponent<CameraComponent>();
         }
 
-        //remoções - model
-        if(removeModelRenderer)
+        // remoções - model
+        if (removeModelRenderer)
         {
             entity.RemoveComponent<ModelRendererComponent>();
         }
 
-        //remoções - rigid body
-        if(removeRigidBody)
+        // remoções - rigid body
+        if (removeRigidBody)
         {
             entity.RemoveComponent<RigidBodyComponent>();
         }
 
-        //remoções - box collider
-        if(removeBoxCollider)
+        // remoções - box collider
+        if (removeBoxCollider)
         {
             entity.RemoveComponent<BoxColliderComponent>();
         }
@@ -352,12 +261,12 @@ namespace primitive
         ImGui::Checkbox("Is Trigger", &collider.isTrigger);
         ImGui::DragFloat3("Offset", &collider.offset.x, 0.5f);
 
-        if (ImGui::DragFloat3("Friction", &collider.friction, 0.01f, 0.0f, 1.0f))
+        if (ImGui::DragFloat("Friction", &collider.friction, 0.01f, 0.0f, 1.0f))
         {
             collider.friction = glm::clamp(collider.friction, 0.0f, 1.0f);
         }
 
-        if (ImGui::DragFloat("Restitution", &collider.restitution, 0.0f, 1.0f))
+        if (ImGui::DragFloat("Restitution", &collider.restitution, 0.1f, 0.0f, 1.0f))
         {
             collider.restitution = glm::clamp(collider.restitution, 0.0f, 1.0f);
         }
@@ -424,28 +333,66 @@ namespace primitive
     void InspectorPanel::DrawModelProperties(ModelRendererComponent &modelRendererComponent)
     {
         auto &component = modelRendererComponent;
-        ImGui::Text("Model %s", component.model ? "Loaded" : "None");
+        ImGui::TextDisabled("Model");
         if (component.model)
         {
+            ImGui::TextWrapped("Status: Loaded");
             ImGui::Text("Path: %s", component.model->GetFilepath().c_str());
-            // ImGui::Text("Meshes: %s", component.model->GetMeshes().size());
+            ImGui::Text("Meshes: %zu", component.model->GetMeshCount());
+        }
+        else
+        {
+            ImGui::TextDisabled("Status: None");
         }
 
-        ImGui::Text("Material %s", component.material ? "Loaded" : "None");
-        if (component.material)
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        ImGui::TextDisabled("Material");
+        if (!component.material)
         {
-            glm::vec4 color = component.material->GetBaseColor();
-            if (ImGui::ColorEdit4("Base Color", &color.x))
-            {
-                component.material->SetBaseColor(color);
-            }
+            ImGui::TextDisabled("Status: none");
+            return;
+        }
+        ImGui::Text("Status: Loaded");
 
-            const auto &texture = component.material->GetAlbedoTexture();
+        glm::vec4 color = component.material->GetBaseColor();
 
-            if (texture)
-            {
-                ImGui::Text("Texture: %s", texture->GetFilepath().c_str());
-            }
+        if (ImGui::ColorEdit4("Base Color", &color.x))
+        {
+            component.material->SetBaseColor(color);
+        }
+
+        ImGui::Spacing();
+
+        ImGui::TextDisabled("Shader");
+
+        const auto &shader = component.material->GetShader();
+
+        if (shader)
+        {
+            ImGui::Text("Status: Loaded");
+            ImGui::TextWrapped("Path: %s", shader->GetFilepath().c_str());
+        }
+        else
+        {
+            ImGui::TextDisabled("Status: None");
+        }
+
+        ImGui::Spacing();
+        ImGui::TextDisabled("Albedo Texture");
+
+        const auto &texture = component.material->GetAlbedoTexture();
+
+        if (texture)
+        {
+            ImGui::Text("Status: Loaded");
+            ImGui::TextWrapped("Path: %s", texture->GetFilepath().c_str());
+        }
+        else
+        {
+            ImGui::TextDisabled("Status: None");
         }
     }
 
@@ -458,10 +405,10 @@ namespace primitive
 
         switch (rigidBody.type)
         {
-        case RigidBodyType::Dynamic:
+        case RigidBodyType::Static:
             currentType = 0;
             break;
-        case RigidBodyType::Static:
+        case RigidBodyType::Dynamic:
             currentType = 1;
             break;
         case RigidBodyType::Kinematic:

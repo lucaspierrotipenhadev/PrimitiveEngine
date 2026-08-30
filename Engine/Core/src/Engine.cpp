@@ -31,22 +31,17 @@ namespace primitive
         : m_configuration(),
           m_platform(),
           m_input(),
-          m_sdlInput(
-              m_input,
-              m_eventBus),
-          m_window(
-              m_configuration.window),
+          m_sdlInput(m_input, m_eventBus),
+          m_window(m_configuration.window),
           m_renderer(),
           m_resourceManager()
     {
-        m_logger.Info(
-            "Engine constructed.");
+        m_logger.Info("Engine constructed.");
     }
 
     Engine::~Engine()
     {
-        m_logger.Info(
-            "[Engine] Destroying engine...");
+        m_logger.Info("[Engine] Destroying engine...");
     }
 
     void Engine::Run()
@@ -60,14 +55,10 @@ namespace primitive
         while (m_running)
         {
             m_time.BeginFrame();
-
             m_input.BeginFrame();
 
             ProcessEvents();
-
-            Update(
-                m_time.GetDeltaTime());
-
+            Update(m_time.GetDeltaTime());
             Render();
         }
 
@@ -81,136 +72,28 @@ namespace primitive
 
     void Engine::Initialize()
     {
-        m_eventBus.Subscribe<
-            WindowClosedEvent>(
-            [this](
-                const WindowClosedEvent &)
+        m_eventBus.Subscribe<WindowClosedEvent>(
+            [this](const WindowClosedEvent &)
             {
                 Stop();
             });
 
-        m_renderer.Initialize(
-            m_configuration.renderer.backend,
-            m_resourceManager);
-
+        m_renderer.Initialize(m_configuration.renderer.backend, m_resourceManager);
         m_renderer.DepthTest(true);
 
-        m_resourceManager.RegisterLoader<Model>(
-            std::make_shared<ModelLoader>(
-                m_renderer));
+        m_resourceManager.RegisterLoader<Model>(std::make_shared<ModelLoader>(m_renderer));
 
-        // -----------------------------------------
         // Scene
-        // -----------------------------------------
-
         m_activeScene = std::make_unique<Scene>();
         m_activeScene->SetFixedTimeStep(m_configuration.physics.fixedTimeStep);
-
-        //------------------------------------------
-        // Assets
-        //------------------------------------------
-
-        auto shader = m_resourceManager.Load<Shader>("Assets/Shaders/basic.glsl");
-
-        if (!shader)
-        {
-            throw std::runtime_error(
-                "Failed to load shader.");
-        }
-
-        auto texture = m_resourceManager.Load<Texture>("Assets/Textures/checker.png");
-
-        if (!texture)
-        {
-            throw std::runtime_error(
-                "Failed to load texture.");
-        }
-
-        auto model = m_resourceManager.Load<Model>("Assets/Models/cube.obj");
-
-        if (!model)
-        {
-            throw std::runtime_error(
-                "Failed to load model.");
-        }
-
-        auto material =
-            std::make_shared<Material>(
-                shader);
-
-        material->SetBaseColor(
-            glm::vec4{
-                1.0f,
-                1.0f,
-                1.0f,
-                1.0f});
-        material->SetAlbedoTexture(texture);
-
-        // -----------------------------------------
-        // Camera Entity
-        // -----------------------------------------
-
-        auto cameraEntity = m_activeScene->CreateEntity("Camera");
-        auto &cameraTransform = cameraEntity.GetComponent<TransformComponent>();
-
-        cameraTransform.transform.SetPosition(glm::vec3{0.0f, 2.0f, 0.0f});
-
-        const float aspectRatio =
-            static_cast<float>(m_window.GetWidth()) /
-            static_cast<float>(m_window.GetHeight());
-
-        cameraEntity.AddComponent<CameraComponent>();
-
-        cameraEntity.GetComponent<CameraComponent>().projectionType = CameraProjectionType::Perspective;
-        cameraEntity.GetComponent<CameraComponent>().perspectiveFov = 45.0f;
-        cameraEntity.GetComponent<CameraComponent>().perspectiveNear = 0.1f;
-        cameraEntity.GetComponent<CameraComponent>().perspectiveFar = 100.0f;
-        cameraEntity.GetComponent<CameraComponent>().primary = true;
-        cameraEntity.GetComponent<CameraComponent>().UppdateProjection(aspectRatio);
-
-        // -----------------------------------------
-        // Cube Entity
-        // -----------------------------------------
-        auto cubeEntity = m_activeScene->CreateEntity("Cube");
-        auto &transform = cubeEntity.GetComponent<TransformComponent>();
-
-        transform.transform.SetPosition(glm::vec3{0.0f, 5.0f, -10.0f});
-        cubeEntity.AddComponent<ModelRendererComponent>(model, material);
-
-        auto &cubeRigidiBody = cubeEntity.AddComponent<RigidBodyComponent>();
-        cubeRigidiBody.type = RigidBodyType::Dynamic;
-        cubeRigidiBody.mass = 1.0f;
-        cubeRigidiBody.useGravity = true;
-        cubeRigidiBody.velocity = glm::vec3{0.0f};
-
-        auto &cubeCollider = cubeEntity.AddComponent<BoxColliderComponent>();
-        cubeCollider.halfExtends = glm::vec3{0.5f, 0.5f, 0.5f};
-        cubeCollider.collider.restitution = 0.0f;
-        cubeCollider.collider.friction = 0.0f;
-
-        auto groundEntity = m_activeScene->CreateEntity("Ground");
-
-        auto &groundTransform = groundEntity.GetComponent<TransformComponent>();
-        groundTransform.transform.SetPosition(glm::vec3{0.0f, -1.0f, -10.0f});
-        groundTransform.transform.SetScale(glm::vec3{6.0f, 0.5f, 6.0f});
-
-        groundEntity.AddComponent<ModelRendererComponent>(model, material);
-
-        auto &groundCollider = groundEntity.AddComponent<BoxColliderComponent>();
-        groundCollider.halfExtends = glm::vec3{0.5f, 0.5f, 0.5f};
-        groundCollider.collider.restitution = 0.0f;
-        groundCollider.collider.friction = 0.0f;
 
         m_logger.Info("[Engine] Scene initialized.");
         m_logger.Info("[Engine] Initialized.");
 
-        m_eventBus.Subscribe<
-            CollisionEnterEvent>(
-            [this](
-                const CollisionEnterEvent &)
+        m_eventBus.Subscribe<CollisionEnterEvent>(
+            [this](const CollisionEnterEvent &)
             {
-                m_logger.Info(
-                    "[Physics] Collision Enter.");
+                m_logger.Info("[Physics] Collision Enter.");
             });
 
         m_layerStack.OnAttach(*this);
@@ -253,11 +136,7 @@ namespace primitive
     {
         m_renderer.BeginFrame();
 
-        m_renderer.Clear(
-            0.10f,
-            0.15f,
-            0.15f,
-            1.0f);
+        m_renderer.Clear(0.10f, 0.15f, 0.15f, 1.0f);
 
         if (m_activeScene && m_renderActiveScene && m_updateActiveScene)
         {
@@ -298,10 +177,19 @@ namespace primitive
         return m_activeScene.get();
     }
 
-    const Scene *
-    Engine::GetActiveScene() const
+    const Scene * Engine::GetActiveScene() const
     {
         return m_activeScene.get();
+    }
+
+    ResourceManager& Engine::GetResourceManager()
+    {
+        return m_resourceManager;
+    }
+
+    const ResourceManager& Engine::GetResourceManager() const
+    {
+        return m_resourceManager;
     }
 
     Renderer &Engine::GetRenderer()
@@ -314,11 +202,9 @@ namespace primitive
         return m_renderer;
     }
 
-    void Engine::SetRenderActiveScene(
-        bool enabled)
+    void Engine::SetRenderActiveScene(bool enabled)
     {
-        m_renderActiveScene =
-            enabled;
+        m_renderActiveScene = enabled;
     }
 
     bool Engine::GetRenderActiveScene() const

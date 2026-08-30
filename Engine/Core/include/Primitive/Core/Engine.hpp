@@ -55,6 +55,12 @@ namespace primitive
         [[nodiscard]]
         const Renderer &GetRenderer() const;
 
+        [[nodiscard]]
+        ResourceManager& GetResourceManager();
+
+        [[nodiscard]]
+        const ResourceManager& GetResourceManager() const;
+
         void SetRenderActiveScene(bool enabled);
 
         [[nodiscard]]

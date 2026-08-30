@@ -14,9 +14,17 @@ namespace primitive
     {
         m_engine->PushLayer(std::make_unique<ImGuiLayer>());
         m_engine->PushLayer(std::make_unique<EditorLayer>());
+
+        if(NFD_Init() != NFD_OKAY)
+        {
+            throw std::runtime_error("Failed to initialize native file dialog.");
+        }
     }
 
-    EditorApplication::~EditorApplication() = default;
+    EditorApplication::~EditorApplication()
+    {
+        NFD_Quit();
+    }
 
     void EditorApplication::Run()
     {

@@ -20,20 +20,16 @@ namespace primitive
 
     void HierarchyPanel::OnRender()
     {
-        ImGui::Begin(
-            "Hierarchy");
+        ImGui::Begin("Hierarchy");
 
         if (!m_scene)
         {
-            ImGui::TextDisabled(
-                "No active scene.");
-
+            ImGui::TextDisabled("No active scene.");
             ImGui::End();
             return;
         }
 
-        if (ImGui::Button(
-                "+ Entity"))
+        if (ImGui::Button("+ Entity"))
         {
             CreateEntity();
         }
@@ -53,45 +49,32 @@ namespace primitive
                     static_cast<int>(
                         entityID));
 
-                std::string name =
-                    "Entity";
+                std::string name = "Entity";
 
                 if (entity.HasComponent<
                         TagComponent>())
                 {
-                    name =
-                        entity
-                            .GetComponent<
-                                TagComponent>()
-                            .tag;
+                    name = entity.GetComponent<TagComponent>().tag;
                 }
 
                 const bool selected =
                     m_selectionContext &&
                     *m_selectionContext &&
-                    m_selectionContext
-                            ->GetID() ==
-                        entityID;
+                    m_selectionContext->GetID() == entityID;
 
-                if (ImGui::Selectable(
-                        name.c_str(),
-                        selected))
+                if (ImGui::Selectable(name.c_str(), selected))
                 {
                     if (m_selectionContext)
                     {
-                        *m_selectionContext =
-                            entity;
+                        *m_selectionContext = entity;
                     }
                 }
 
-                if (ImGui::BeginPopupContextItem(
-                        "EntityContext"))
+                if (ImGui::BeginPopupContextItem("EntityContext"))
                 {
-                    if (ImGui::MenuItem(
-                            "Delete Entity"))
+                    if (ImGui::MenuItem("Delete Entity"))
                     {
-                        entityToDestroy =
-                            entity;
+                        entityToDestroy = entity;
                     }
 
                     ImGui::EndPopup();
