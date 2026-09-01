@@ -183,4 +183,5 @@ FetchContent_MakeAvailable(nativefiledialog)
 
 add_subdirectory(Engine)
 add_subdirectory(Editor)
+add_subdirectory(Tests)
 add_subdirectory(Sandbox)

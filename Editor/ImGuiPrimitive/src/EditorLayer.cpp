@@ -11,6 +11,10 @@
 #include "Primitive/Scene/Components/TransformComponent.hpp"
 #include "Primitive/Scene/SceneSerializer.hpp"
 
+#include "Primitive/Assets/AssetManager.hpp"
+
+#include "Primitive/Project/Project.hpp"
+
 #include <cstdint>
 
 #include <imgui.h>
@@ -19,6 +23,10 @@
 
 namespace primitive
 {
+    EditorLayer::EditorLayer(Project& project, AssetManager& assetManager) : m_project(project), m_assetManager(assetManager)
+    {
+    }
+
     void EditorLayer::OnAttach(Engine &engine)
     {
         m_engine = &engine;
@@ -27,7 +35,11 @@ namespace primitive
 
         m_editorScene = engine.GetActiveScene();
 
+        m_contentBrowserPanel.SetProject(&m_project);
+        m_contentBrowserPanel.SetAssetManager(&m_assetManager);
+
         m_hierarchyPanel.SetSelectionContext(&m_selectedEntity);
+        m_inspectorPanel.SetAssetManager(&m_assetManager);
         m_inspectorPanel.SetSelectionContext(&m_selectedEntity);
 
         NewScene();
@@ -49,8 +61,11 @@ namespace primitive
         }
 
         m_inspectorPanel.SetSelectionContext(nullptr);
+        m_inspectorPanel.SetAssetManager(nullptr);
         m_hierarchyPanel.SetSelectionContext(nullptr);
         m_hierarchyPanel.SetScene(nullptr);
+        m_contentBrowserPanel.SetProject(nullptr);
+        m_contentBrowserPanel.SetAssetManager(nullptr);
         m_engine = nullptr;
     }
 
@@ -134,6 +149,7 @@ namespace primitive
 
         m_hierarchyPanel.OnRender();
         m_inspectorPanel.OnRender();
+        m_contentBrowserPanel.OnRender();
 
         if (m_selectedEntity)
         {
@@ -734,13 +750,16 @@ namespace primitive
 
         ImGuiID dockLeft = 0;
         ImGuiID dockRight = 0;
+        ImGuiID dockBottom = 0;
 
         ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Left, 0.20f, &dockLeft, &dockMain);
         ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Right, 0.25f, &dockRight, &dockMain);
+        ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Down, 0.30f, &dockBottom, &dockMain);
 
         ImGui::DockBuilderDockWindow("Hierarchy", dockLeft);
         ImGui::DockBuilderDockWindow("Inspector", dockRight);
         ImGui::DockBuilderDockWindow("Viewport", dockMain);
+        ImGui::DockBuilderDockWindow("Content Browser", dockBottom);
 
         ImGui::DockBuilderFinish(dockspaceID);
     }
@@ -778,7 +797,7 @@ namespace primitive
 
         const ImGuiID dockspaceID = ImGui::GetID("PrimitiveEditorDockspace");
 
-        if (ImGui::DockBuilderGetNode(dockspaceID) == nullptr)
+        if (m_resetDockLayout || ImGui::DockBuilderGetNode(dockspaceID) == nullptr)
         {
             SetupDefaultDockLayout(dockspaceID, viewport->WorkSize);
             m_resetDockLayout = false;

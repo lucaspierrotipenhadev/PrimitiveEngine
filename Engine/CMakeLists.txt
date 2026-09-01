@@ -47,6 +47,18 @@ add_library(PrimitiveEngine STATIC
     Physics/src/BroadPhase.cpp
     Physics/src/AABB.cpp
     Physics/src/FixedTimeStep.cpp
+
+    Assets/src/AssetHandleGenerator.cpp
+    Assets/src/AssetRegistry.cpp
+    Assets/src/AssetManager.cpp
+    Assets/src/AssetDiscovery.cpp
+    Assets/src/Importer/AssetImporterRegistry.cpp
+    Assets/src/Importer/ModelAssetImporter.cpp
+    Assets/src/Importer/TextureAssetImporter.cpp
+    Assets/src/Importer/ShaderAssetImporter.cpp
+    Assets/src/Importer/SceneAssetImporter.cpp
+    
+    Project/src/Project.cpp
 )
 
 target_include_directories(PrimitiveEngine
@@ -57,6 +69,8 @@ target_include_directories(PrimitiveEngine
         ${CMAKE_CURRENT_SOURCE_DIR}/Renderer/include
         ${CMAKE_CURRENT_SOURCE_DIR}/Scene/include
         ${CMAKE_CURRENT_SOURCE_DIR}/Physics/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/Assets/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/Project/include
         ${stb_SOURCE_DIR}
 )
 

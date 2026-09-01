@@ -11,6 +11,7 @@ add_executable(
     ImGuiPrimitive/src/Panels/HierarchyPanel.cpp
     ImGuiPrimitive/src/Panels/InspectorPanel.cpp
     ImGuiPrimitive/src/Panels/ViewportPanel.cpp
+    ImGuiPrimitive/src/Panels/ContentBrowserPanel.cpp
 )
 
 target_include_directories(

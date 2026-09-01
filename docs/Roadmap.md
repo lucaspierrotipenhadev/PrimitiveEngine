@@ -110,3 +110,52 @@ Milestone 5 — Editor
 20. cena de edição vs cena em runtime
 21. salvar/carregar Scene
 22. primeiro fluxo completo no Editor
+
+Milestone 6 — Asset System
+  1. AssetHandle
+  2. AssetType
+  3. AssetMetadata
+  4. AssetRegistry
+  5. AssetManager
+  6. .meta files
+  7. Assets directory scan/import
+  8. serialization por AssetHandle
+  9. Content Browser
+ 10. drag & drop assets
+ 11. Model/Material integration
+ 12. Scene integration
+ 13. Asset reload/reimport básico
+ 14. teste completo
+
+Milestone 7 — Skeletal Animation
+  1. Bone
+  2. Skeleton
+  3. Assimp bone import
+  4. vertex bone IDs/weights
+  5. Skinned Mesh
+  6. AnimationClip
+  7. keyframes
+  8. interpolation
+  9. Animator
+ 10. AnimatorComponent
+ 11. GPU skinning
+ 12. animation playback
+ 13. editor controls
+ 14. teste com personagem animado
+
+Milestone 8 — Scripting
+  1. scripting architecture
+  2. ScriptableEntity
+  3. NativeScriptComponent
+  4. lifecycle
+  5. Scene integration
+  6. Play/Stop integration
+  7. script access to components
+  8. input access
+  9. physics access
+ 10. serialization
+ 11. Inspector integration
+ 12. Lua runtime
+ 13. Lua bindings
+ 14. script assets
+ 15. teste PlayerController

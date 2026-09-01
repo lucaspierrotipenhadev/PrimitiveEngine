@@ -1,5 +1,10 @@
 #include "Primitive/ImGuiPrimitive/Panels/InspectorPanel.hpp"
 
+#include <string>
+#include <filesystem>
+
+#include "Primitive/ImGuiPrimitive/DragDropPayloads.hpp"
+
 #include "Primitive/Scene/Components/TagComponent.hpp"
 #include "Primitive/Scene/Components/TransformComponent.hpp"
 #include "Primitive/Scene/Components/CameraComponent.hpp"
@@ -18,6 +23,13 @@
 
 #include "Primitive/Physics/Collider.hpp"
 
+#include "Primitive/Resources/ResourceManager.hpp"
+
+#include "Primitive/Assets/AssetManager.hpp"
+#include "Primitive/Assets/AssetMetadata.hpp"
+#include "Primitive/Assets/AssetHandle.hpp"
+#include "Primitive/Assets/AssetType.hpp"
+
 #include <imgui.h>
 #include <glm/glm.hpp>
 #include <glm/common.hpp>
@@ -26,6 +38,11 @@ namespace primitive
 {
     InspectorPanel::InspectorPanel(Entity *selectedEntity) : m_selectionContext(selectedEntity)
     {
+    }
+
+    void InspectorPanel::SetAssetManager(AssetManager *assetManager)
+    {
+        m_assetManager = assetManager;
     }
 
     void InspectorPanel::SetSelectionContext(Entity *selectedEntity)
@@ -333,16 +350,45 @@ namespace primitive
     void InspectorPanel::DrawModelProperties(ModelRendererComponent &modelRendererComponent)
     {
         auto &component = modelRendererComponent;
-        ImGui::TextDisabled("Model");
+
+        ImGui::TextUnformatted("Model");
+
+        std::string modelName = "None";
+        const float removeButtonWidth = component.model ? 28.0f : 0.0f;
+
         if (component.model)
         {
-            ImGui::TextWrapped("Status: Loaded");
-            ImGui::Text("Path: %s", component.model->GetFilepath().c_str());
-            ImGui::Text("Meshes: %zu", component.model->GetMeshCount());
+            modelName = std::filesystem::path{component.model->GetFilepath()}.filename().string();
+
+            const float width =
+                ImGui::GetContentRegionAvail().x -
+                removeButtonWidth -
+                ImGui::GetStyle().ItemSpacing.x;
         }
-        else
+        
+        ImGui::Button(modelName.c_str(), ImVec2{-1.0f, 0.0f});
+
+        if (ImGui::BeginDragDropTarget())
         {
-            ImGui::TextDisabled("Status: None");
+            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(AssetDragDropPayload))
+            {
+                if (payload->DataSize == sizeof(AssetHandle) && m_assetManager)
+                {
+                    const AssetHandle handle = *static_cast<const AssetHandle *>(payload->Data);
+                    const AssetMetadata *metadata = m_assetManager->GetMetadata(handle);
+
+                    if (metadata && metadata->type == AssetType::Model)
+                    {
+                        std::shared_ptr<Model> model = m_assetManager->LoadAsset<Model>(handle, AssetType::Model);
+
+                        if (model)
+                        {
+                            component.model = std::move(model);
+                        }
+                    }
+                }
+            }
+            ImGui::EndDragDropTarget();
         }
 
         ImGui::Spacing();
